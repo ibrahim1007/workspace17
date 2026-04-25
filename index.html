@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beranda - LEODRA Eksklusif</title>
+    
+    <!-- Script Anti-Error ResizeObserver -->
+    <script>
+      const _originalError = console.error;
+      console.error = (...args) => {
+        if (/ResizeObserver loop/.test(args[0])) return;
+        _originalError.apply(console, args);
+      };
+      window.addEventListener('error', e => {
+        if (e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Gaya Global & Font Khusus Header */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        @media screen and (min-width: 1280px) { body { zoom: 0.8; } }
+        
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi & Collapse */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Background Hero Pattern */
+        .hero-pattern {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA LEODRA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 fixed top-0 w-full z-50 transition-all duration-300 h-16 md:h-20">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <div class="flex items-center flex-shrink-0 cursor-pointer" onclick="window.location.href='landing_page.html'">
+                <span class="font-light text-lg md:text-xl tracking-widest text-slate-900 font-merriweather">LEODRA</span>
+            </div>
+
+            <!-- AREA KANAN (USER GUEST & MENU MOBILE) -->
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather mt-1">Akses Publik</p>
+                    </div>
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE (OVERLAY - CLEAN & MINIMALIST) ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-24 pb-4 overflow-y-auto">
+        <div class="flex-1 px-6 py-2 flex flex-col w-full">
+            
+            <h4 class="text-[11px] font-bold tracking-widest uppercase text-slate-400 mb-3.5">Navigasi Akses</h4>
+            <ul class="flex flex-col w-full text-left space-y-1.5">
+                <li class="border-b border-black">
+                    <!-- HANYA MENU MASUK -->
+                    <a href="masuk.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="log-in" class="w-[18px] h-[18px]"></i> <span class="uppercase tracking-widest">Masuk / Login</span></div>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto pt-8 pb-4">
+                <span class="font-light text-lg tracking-widest text-black font-merriweather block mb-1.5">LEODRA<span class="text-[10px] text-[#d4af37] font-merriweather font-light tracking-widest ml-1">EKSKLUSIF</span></span>
+                <p class="text-[11px] leading-relaxed text-slate-500 text-justify">
+                    Infrastruktur analitik dan eksekusi transaksi pasar finansial tingkat institusional. Tervalidasi dan transparan secara absolut.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP (KIRI) ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white/90 backdrop-blur-md border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto mt-2">
+            <div class="flex items-center justify-between px-2 mb-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Otorisasi Klien</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-black hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <!-- HANYA MENU MASUK (TOMBOL BESAR HITAM) -->
+            <a href="masuk.html" class="flex items-center px-4 py-3.5 text-[14px] font-medium rounded-none bg-black text-white shadow-md transition-all duration-300">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text font-bold tracking-widest uppercase text-xs">Masuk Ruang Klien</span>
+            </a>
+            
+        </nav>
+        
+        <div class="px-4 pb-2 mt-auto">
+            <div class="h-px bg-slate-200 w-full mb-4"></div>
+            <p class="text-[9px] text-slate-400 font-medium text-center w-full sidebar-text leading-relaxed tracking-widest uppercase">Eksklusif & Konfidensial<br>© 2026 LEODRA</p>
+        </div>
+    </aside>
+
+    <!-- ▼▼▼ WRAPPER UNTUK KONTEN UTAMA ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative">
+        <main class="flex-grow w-full mb-8 overflow-hidden">
+            
+            <!-- Hero Section -->
+            <section class="relative bg-white border-b border-slate-200 overflow-hidden hero-pattern">
+                <div class="absolute inset-0 bg-gradient-to-b from-white/60 to-white/95"></div>
+                <div class="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col items-center text-center">
+                    
+                    <!-- PERUBAHAN: text-[7px] font-medium -->
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-slate-50 border border-slate-200 mb-4 sm:mb-5 shadow-sm">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse"></span>
+                        <span class="text-[7px] font-medium text-slate-500 uppercase tracking-widest">Sistem Tervalidasi</span>
+                    </div>
+                    
+                    <!-- PERUBAHAN: font-sans (standar), font-medium pada teks Institusi, text-[1.2] leading, dan tracking-tight -->
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 font-sans leading-[1.2] tracking-tight mb-4">
+                        Ekosistem Trading <br class="hidden md:block">
+                        <span class="font-medium text-black">Tingkat Institusi.</span>
+                    </h1>
+                    
+                    <!-- PERUBAHAN: font-normal, text-[9px] ke text-xs -->
+                    <p class="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-normal max-w-lg mx-auto leading-relaxed mb-6">
+                        Platform manajemen risiko, analitik performa, dan infrastruktur copytrade otomatis yang didesain murni untuk mengeliminasi tebak-tebakan pasar demi mencapai pertumbuhan portofolio absolut.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full sm:w-auto">
+                        <!-- PERUBAHAN: font-medium, padding dikurangi sedikit agar proporsional -->
+                        <a href="masuk.html" class="w-full sm:w-auto px-5 py-2.5 bg-slate-900 text-white text-[8px] sm:text-[9px] font-medium uppercase tracking-wider shadow-md hover:bg-black hover:shadow-lg transition-all flex items-center justify-center gap-1.5 border border-slate-900">
+                            <i data-lucide="door-open" class="w-3 h-3"></i> Akses Workspace
+                        </a>
+                        <a href="#fitur" class="w-full sm:w-auto px-5 py-2.5 bg-white text-slate-700 text-[8px] sm:text-[9px] font-medium uppercase tracking-wider hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm">
+                            Pelajari Sistem
+                        </a>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Tiga Pilar Section -->
+            <section id="fitur" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+                <div class="text-center mb-8 sm:mb-10">
+                    <!-- PERUBAHAN: font-sans (menghilangkan merriweather) -->
+                    <h2 class="text-lg md:text-xl font-light text-slate-900 mb-2.5 uppercase tracking-wider font-sans">Arsitektur Ekosistem</h2>
+                    <div class="w-10 h-px bg-[#d4af37] mx-auto"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                    
+                    <!-- Pilar 1 -->
+                    <div class="bg-white p-5 md:p-6 border border-slate-200 shadow-sm hover:border-slate-400 transition-colors group">
+                        <div class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center mb-3 group-hover:bg-slate-900 group-hover:border-slate-900 transition-colors">
+                            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <!-- PERUBAHAN: font-medium -->
+                        <h3 class="text-[10px] sm:text-[11px] font-medium text-slate-900 uppercase tracking-wider mb-2">Analitik Transparan</h3>
+                        <p class="text-[8px] sm:text-[9px] text-slate-500 leading-relaxed text-justify font-normal">
+                            Sistem perekaman algoritma "Black Box" yang melacak *Win Rate*, akurasi titik Entry, dan efisiensi Stop Loss dari setiap analis tanpa kemungkinan manipulasi data riwayat.
+                        </p>
+                    </div>
+
+                    <!-- Pilar 2 -->
+                    <div class="bg-white p-5 md:p-6 border border-slate-200 shadow-sm hover:border-[#d4af37] transition-colors group">
+                        <div class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center mb-3 group-hover:bg-[#d4af37] group-hover:border-[#d4af37] transition-colors">
+                            <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <h3 class="text-[10px] sm:text-[11px] font-medium text-slate-900 uppercase tracking-wider mb-2">Otomatisasi Portofolio</h3>
+                        <p class="text-[8px] sm:text-[9px] text-slate-500 leading-relaxed text-justify font-normal">
+                            Salin posisi pasar (Copytrade) secara instan. Sistem kami secara otomatis menyesuaikan ukuran lot berdasarkan proporsi ketahanan margin antara Master Trader dan Investor.
+                        </p>
+                    </div>
+
+                    <!-- Pilar 3 -->
+                    <div class="bg-white p-5 md:p-6 border border-slate-200 shadow-sm hover:border-[#800000] transition-colors group">
+                        <div class="w-8 h-8 bg-slate-50 border border-slate-200 flex items-center justify-center mb-3 group-hover:bg-[#800000] group-hover:border-[#800000] transition-colors">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <h3 class="text-[10px] sm:text-[11px] font-medium text-slate-900 uppercase tracking-wider mb-2">Manajemen Risiko</h3>
+                        <p class="text-[8px] sm:text-[9px] text-slate-500 leading-relaxed text-justify font-normal">
+                            Dilengkapi kalkulator pelindung dana tingkat lanjut dan limit Drawdown otomatis untuk memastikan keamanan modal investasi Anda saat pasar bergejolak ekstrem.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 mb-6">
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 text-center sm:text-left">
+                        <span class="font-light text-lg md:text-xl tracking-widest text-white font-merriweather block mb-2">LEODRA<span class="text-xs md:text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">EKSKLUSIF</span></span>
+                        <p class="text-[11px] md:text-xs leading-relaxed text-center sm:text-left">
+                            Infrastruktur manajemen risiko dan analitik trading tingkat institusional. Ekosistem tervalidasi berbasis performa absolut.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 flex flex-col items-center sm:items-start md:pl-8 lg:pl-16 w-full mt-2 md:mt-0">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3 border-b border-slate-800 pb-2 w-full max-w-[200px] text-center sm:text-left">Akses Publik</h4>
+                        <div class="grid grid-cols-1 gap-y-2 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[200px]">
+                            <!-- HANYA MENYEDIAKAN MENU MASUK SESUAI PERMINTAAN -->
+                            <a href="masuk.html" class="hover:text-white transition-colors flex items-center justify-center sm:justify-start gap-1.5"><i data-lucide="log-in" class="w-3 h-3 text-slate-500"></i> Masuk Ruang Klien</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 text-[9px] md:text-[10px] text-slate-500 text-center sm:text-left">
+                    <div class="max-w-4xl leading-relaxed mx-auto lg:mx-0">
+                        <strong class="text-slate-400">Peringatan Risiko:</strong> Trading instrumen berjangka memiliki risiko tinggi kehilangan modal. LEODRA adalah penyedia infrastruktur *software-as-a-service* analitik, bukan manajer pialang pengelola dana publik.
+                    </div>
+                    <div class="flex flex-col items-center lg:items-end gap-1 flex-shrink-0 mt-2 lg:mt-0 mx-auto lg:mx-0">
+                        <p>&copy; 2026 LEODRA System. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ▼▼▼ LOGIKA JAVASCRIPT UMUM ▼▼▼ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+        });
+
+        // ---------------- JS HEADER & SIDEBAR LOGIC ----------------
+
+        window.toggleMenu = function() {
+            const m = document.getElementById('mobile-menu');
+            const iconMenu = document.getElementById('icon-menu');
+            const iconClose = document.getElementById('icon-close');
+            
+            if(m) { 
+                m.classList.toggle('translate-x-full'); 
+                const isOpen = !m.classList.contains('translate-x-full');
+                
+                document.body.style.overflow = isOpen ? 'hidden' : 'auto'; 
+                
+                if(isOpen) {
+                    if(iconMenu) { iconMenu.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconMenu.classList.add('scale-0', 'rotate-90', 'opacity-0'); }
+                    if(iconClose) { iconClose.classList.remove('scale-0', '-rotate-90', 'opacity-0'); iconClose.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                } else {
+                    if(iconClose) { iconClose.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconClose.classList.add('scale-0', '-rotate-90', 'opacity-0'); }
+                    if(iconMenu) { iconMenu.classList.remove('scale-0', 'rotate-90', 'opacity-0'); iconMenu.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                }
+            }
+        }
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('desktop-sidebar');
+            const wrapper = document.getElementById('main-wrapper');
+            if(sidebar) {
+                sidebar.classList.toggle('is-collapsed');
+                if (sidebar.classList.contains('is-collapsed')) {
+                    if(wrapper) {
+                        wrapper.classList.remove('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.add('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                } else {
+                    if(wrapper) {
+                        wrapper.classList.add('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.remove('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

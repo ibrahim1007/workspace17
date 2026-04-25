@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Setting System - LEODRA Admin</title>
+    
+    <!-- Script Anti-Error ResizeObserver -->
+    <script>
+      const _originalError = console.error;
+      console.error = (...args) => {
+        if (/ResizeObserver loop/.test(args[0])) return;
+        _originalError.apply(console, args);
+      };
+      window.addEventListener('error', e => {
+        if (e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Gaya Global & Font */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        @media screen and (min-width: 1280px) { body { zoom: 0.85; } }
+        
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Form Controls Custom */
+        .ws-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0; 
+            background-color: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+            outline: none;
+            color: #0f172a;
+        }
+        .ws-input:focus {
+            border-color: #0f172a;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA LEODRA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <div class="flex items-center flex-shrink-0 cursor-pointer">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather">LEODRA<span class="text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather mt-1">Admin System</p>
+                    </div>
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-24 pb-4 overflow-y-auto">
+        <div class="flex-1 px-6 py-2 flex flex-col w-full">
+            
+            <h4 class="text-[11px] font-bold tracking-widest uppercase text-slate-400 mb-3.5">Navigasi Admin</h4>
+            <ul class="flex flex-col w-full text-left space-y-1.5">
+                <li class="border-b border-slate-200">
+                    <a href="masuk.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="log-in" class="w-[18px] h-[18px]"></i> <span>Masuk</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-200">
+                    <a href="workspace.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i> <span>Workspace</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-black">
+                    <a href="setting_system.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="settings" class="w-[18px] h-[18px]"></i> <span>Setting System</span></div>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-200">
+                    <a href="information_user.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="users" class="w-[18px] h-[18px]"></i> <span>Information User</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto pt-8 pb-4">
+                <span class="font-light text-lg tracking-widest text-black font-merriweather block mb-1.5">LEODRA<span class="text-[10px] text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                <p class="text-[11px] leading-relaxed text-slate-500 text-justify">
+                    Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP (KIRI) ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white/90 backdrop-blur-md border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <div class="flex items-center justify-between px-2 mb-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Menu Admin</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-black hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <a href="masuk.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Masuk</span>
+            </a>
+            <a href="workspace.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Workspace</span>
+            </a>
+            <a href="setting_system.html" class="flex items-center px-4 py-3 text-[14px] font-medium rounded-none bg-black text-white shadow-md transition-all duration-300 mt-2">
+                <i data-lucide="settings" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Setting System</span>
+            </a>
+            <a href="information_user.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="users" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Information User</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ▼▼▼ KONTEN UTAMA WORKSPACE ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative">
+        <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full mb-10 overflow-hidden">
+            
+            <div class="mb-8 sm:mb-10 text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-light text-gray-900 mb-4 uppercase tracking-widest font-merriweather">Setting System</h1>
+                
+                <!-- Garis Horizontal Tipis -->
+                <hr class="border-t border-slate-200 mb-4 sm:mb-5 max-w-3xl mx-auto md:mx-0">
+                
+                <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[110px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left">
+                    <span class="text-slate-800 font-bold">Beranda</span>
+                    <span>:</span>
+                    <span>- Inovasi - News - Leodratv - Langganan User</span>
+                    
+                    <span class="text-slate-800 font-bold">Top Analis dan Trader</span>
+                    <span>:</span>
+                    <span>- Inovasi - News</span>
+                    
+                    <span class="text-slate-800 font-bold">Lainnya</span>
+                    <span>:</span>
+                    <span>- Inovasi - News</span>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 1. SECTION: BERANDA SETTING
+            =========================================== -->
+            <section class="mb-10 sm:mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5 sm:mb-6 border-b border-slate-300 pb-3 text-center sm:text-left">
+                    <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0 mx-auto sm:mx-0">1</span>
+                    <h2 class="text-[13px] sm:text-[14px] md:text-lg font-bold text-slate-900 uppercase tracking-widest font-merriweather leading-relaxed">Setting Beranda, Top Analis Dan Trader Dan Lainnya</h2>
+                </div>
+                
+                <div class="glass-panel p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 rounded-none relative">
+                    
+                    <!-- Bagian: Inovasi Yang Kami Berikan -->
+                    <div class="space-y-3">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="lightbulb" class="w-4 h-4 text-slate-500"></i> Inovasi Yang Kami Berikan
+                        </label>
+                        <textarea rows="3" class="ws-input resize-y text-xs leading-relaxed" placeholder="Masukkan beberapa kalimat tentang inovasi yang kami berikan..."></textarea>
+                    </div>
+
+                    <hr class="border-t border-slate-200/60">
+
+                    <!-- Bagian: Produk Eksklusif Kami di LeodraNews -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 text-center sm:text-left">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">
+                                <i data-lucide="newspaper" class="w-4 h-4 text-slate-500"></i> Produk Eksklusif Kami (LeodraNews)
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Wajib Mengisi 4 Data Produk</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 pt-2">
+                            <!-- Produk 1 -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                                <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">1</span>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Produk 1</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Judul produk eksklusif...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Poster Produk 1</label>
+                                        <div class="relative">
+                                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            <div class="ws-input flex justify-between items-center bg-white cursor-pointer hover:bg-slate-50 transition-colors text-xs py-2">
+                                                <span class="text-slate-400 truncate">Pilih file gambar...</span>
+                                                <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-600"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Produk 1</label>
+                                        <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat produk..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Produk 2 -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                                <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">2</span>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Produk 2</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Judul produk eksklusif...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Poster Produk 2</label>
+                                        <div class="relative">
+                                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            <div class="ws-input flex justify-between items-center bg-white cursor-pointer hover:bg-slate-50 transition-colors text-xs py-2">
+                                                <span class="text-slate-400 truncate">Pilih file gambar...</span>
+                                                <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-600"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Produk 2</label>
+                                        <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat produk..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Produk 3 -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                                <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">3</span>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Produk 3</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Judul produk eksklusif...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Poster Produk 3</label>
+                                        <div class="relative">
+                                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            <div class="ws-input flex justify-between items-center bg-white cursor-pointer hover:bg-slate-50 transition-colors text-xs py-2">
+                                                <span class="text-slate-400 truncate">Pilih file gambar...</span>
+                                                <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-600"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Produk 3</label>
+                                        <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat produk..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Produk 4 -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                                <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">4</span>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Produk 4</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Judul produk eksklusif...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Poster Produk 4</label>
+                                        <div class="relative">
+                                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            <div class="ws-input flex justify-between items-center bg-white cursor-pointer hover:bg-slate-50 transition-colors text-xs py-2">
+                                                <span class="text-slate-400 truncate">Pilih file gambar...</span>
+                                                <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-600"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi Produk 4</label>
+                                        <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat produk..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <hr class="border-t border-slate-200/60">
+
+                    <!-- Bagian: Premiere Leodratv -->
+                    <div class="space-y-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="youtube" class="w-4 h-4 text-slate-500"></i> Premiere LeodraTV
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Maksimal 6 Tautan Video</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <!-- Link Video 1 s/d 6 -->
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 1 (contoh: https://youtube.com/...)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 2 (contoh: https://youtube.com/...)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 3 (contoh: https://youtube.com/...)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">4</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 4 (contoh: https://youtube.com/...)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">5</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 5 (contoh: https://youtube.com/...)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">6</span>
+                                <input type="url" class="ws-input text-xs flex-1" placeholder="Link Video YT 6 (contoh: https://youtube.com/...)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan Beranda -->
+                    <div class="text-right pt-6 border-t border-slate-200/60 mt-6">
+                        <button onclick="showToast('Seluruh Pengaturan Beranda Berhasil Disimpan!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Data Beranda
+                        </button>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 2. SECTION: EDUKASI SETTING
+            =========================================== -->
+            <section class="mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 text-center sm:text-left">
+                    <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0 mx-auto sm:mx-0">2</span>
+                    <h2 class="text-[14px] md:text-lg font-bold text-slate-900 uppercase tracking-widest font-merriweather leading-relaxed">Setting Edukasi System</h2>
+                </div>
+                
+                <!-- Teks Sub-Keterangan (Mengikuti gaya data di atas) -->
+                <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                    <span class="text-slate-800 font-bold">Education For System</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Modul Video Education For System, - Kuis Ujian Education For System</span>
+                </div>
+                
+                <div class="glass-panel p-6 sm:p-8 space-y-8 rounded-none relative">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-500"></i> Modul Video Edukasi System
+                        </label>
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Wajib Mengisi 6 Data Edukasi</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                        
+                        <!-- Blok Edukasi 1 s/d 6 tetap sama -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">1</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 1</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Contoh: Modul Pola & Setup...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 1</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Contoh: Wajib Tonton">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 1</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 1</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blok Edukasi 2 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">2</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 2</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Contoh: Metodologi Backtest...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 2</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Contoh: Populer">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 2</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 2</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blok Edukasi 3 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">3</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 3</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Judul materi...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 3</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Teks pin...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 3</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 3</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blok Edukasi 4 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">4</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 4</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Judul materi...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 4</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Teks pin...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 4</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 4</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blok Edukasi 5 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">5</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 5</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Judul materi...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 5</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Teks pin...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 5</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 5</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blok Edukasi 6 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">6</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Edukasi 6</label>
+                                    <input type="text" class="ws-input text-xs py-2" placeholder="Judul materi...">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Teks Pin 6</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Teks pin...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Link Video YT 6</label>
+                                        <input type="url" class="ws-input text-xs py-2" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Deskripsi 6</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Deskripsi singkat materi edukasi ini..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr class="border-t border-slate-200/60 my-6">
+
+                    <!-- Bagian: Soal Ujian Edukasi System -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-4 h-4 text-slate-500"></i> Ujian Edukasi System
+                        </label>
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Wajib Mengisi 5 Soal</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                        <!-- Soal 1 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">1</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pertanyaan Soal 1</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Tuliskan pertanyaan tentang sistem..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan A</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan A...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan B</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan B...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kunci Jawaban 1</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih jawaban benar...</option>
+                                        <option value="A">Pilihan A</option>
+                                        <option value="B">Pilihan B</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Soal 2 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">2</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pertanyaan Soal 2</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Tuliskan pertanyaan tentang sistem..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan A</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan A...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan B</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan B...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kunci Jawaban 2</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih jawaban benar...</option>
+                                        <option value="A">Pilihan A</option>
+                                        <option value="B">Pilihan B</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Soal 3 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">3</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pertanyaan Soal 3</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Tuliskan pertanyaan tentang sistem..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan A</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan A...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan B</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan B...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kunci Jawaban 3</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih jawaban benar...</option>
+                                        <option value="A">Pilihan A</option>
+                                        <option value="B">Pilihan B</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Soal 4 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">4</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pertanyaan Soal 4</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Tuliskan pertanyaan tentang sistem..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan A</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan A...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan B</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan B...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kunci Jawaban 4</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih jawaban benar...</option>
+                                        <option value="A">Pilihan A</option>
+                                        <option value="B">Pilihan B</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Soal 5 -->
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 space-y-4 relative hover:border-slate-300 transition-colors md:col-span-1 lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                            <span class="absolute -top-3 -left-3 w-6 h-6 bg-black text-white text-[10px] font-bold flex items-center justify-center shadow-sm">5</span>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pertanyaan Soal 5</label>
+                                    <textarea rows="2" class="ws-input resize-none text-xs leading-relaxed py-2" placeholder="Tuliskan pertanyaan tentang sistem..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan A</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan A...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilihan B</label>
+                                        <input type="text" class="ws-input text-xs py-2" placeholder="Ketik pilihan B...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kunci Jawaban 5</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih jawaban benar...</option>
+                                        <option value="A">Pilihan A</option>
+                                        <option value="B">Pilihan B</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan Edukasi -->
+                    <div class="text-right pt-4 border-t border-slate-200/60">
+                        <button onclick="showToast('Seluruh Pengaturan Edukasi System Berhasil Disimpan!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Data Edukasi System
+                        </button>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 3. SECTION: MARKETPLACE SETTING
+            =========================================== -->
+            <section class="mb-10 sm:mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 text-center sm:text-left">
+                    <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0 mx-auto sm:mx-0">3</span>
+                    <h2 class="text-[13px] sm:text-[14px] md:text-lg font-bold text-slate-900 uppercase tracking-widest font-merriweather leading-relaxed">Setting Marketplace</h2>
+                </div>
+                
+                <!-- Teks Sub-Keterangan Marketplace -->
+                <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                    <span class="text-slate-800 font-bold">Beranda</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Status Akses Fitur Utama - Batas Kuota Berlangganan Channel</span>
+                    
+                    <span class="text-slate-800 font-bold">Top Analis dan Trader</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Status Akses Fitur Utama - Batas Kuota Berlangganan Channel</span>
+                    
+                    <span class="text-slate-800 font-bold">Lainnya</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Status Akses Fitur Utama - Batas Kuota Berlangganan Channel</span>
+                </div>
+                
+                <div class="glass-panel p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 rounded-none relative">
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 text-center sm:text-left">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">
+                                <i data-lucide="store" class="w-4 h-4 text-slate-500"></i> Kontrol Fitur & Status Marketplace
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Lock / Aktifkan Fitur</span>
+                        </div>
+                        
+                        <div class="bg-slate-50/60 border border-slate-200 p-5 space-y-8">
+                            
+                            <!-- Bagian 1: Status Akses Fitur Utama -->
+                            <div>
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 border-b border-slate-200 pb-3 flex items-center gap-2">
+                                    <i data-lucide="toggle-left" class="w-3.5 h-3.5 text-slate-500"></i> Status Akses Fitur Utama
+                                </h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                                    <!-- Baris 1 -->
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Langganan Analis & Trader</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Auto Subs</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Affiliate</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">LeodraPay</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Baris 2 -->
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Belum Bayar</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Berjalan</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Experiod</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Batal</label>
+                                        <select class="ws-input text-xs py-2 mt-auto cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="aktif">Aktifkan Fitur</option>
+                                            <option value="lock">Lock Fitur</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bagian 2: Batas Kuota Berlangganan Channel -->
+                            <div>
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 border-b border-slate-200 pb-3 flex items-center gap-2">
+                                    <i data-lucide="users" class="w-3.5 h-3.5 text-slate-500"></i> Batas Kuota Berlangganan Channel
+                                </h3>
+                                <!-- grid disamakan dengan bagian atas (lg:grid-cols-4) agar sejajar dan presisi -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Maksimal Kuota (Trader)</label>
+                                        <input type="number" class="ws-input text-xs py-2 mt-auto" placeholder="Contoh: 1000" min="1">
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Maksimal Kuota (Analis)</label>
+                                        <input type="number" class="ws-input text-xs py-2 mt-auto" placeholder="Contoh: 1000" min="1">
+                                    </div>
+                                    <div class="flex flex-col h-full">
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 leading-relaxed">Maksimal Kuota (Affiliate)</label>
+                                        <input type="number" class="ws-input text-xs py-2 mt-auto" placeholder="Contoh: 1000" min="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan Marketplace -->
+                    <div class="text-right pt-6 border-t border-slate-200/60 mt-6">
+                        <button onclick="showToast('Pengaturan Marketplace Berhasil Disimpan!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Data Marketplace
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 4. SECTION: LANGGANAN SETTING
+            =========================================== -->
+            <section class="mb-10 sm:mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 text-center sm:text-left">
+                    <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0 mx-auto sm:mx-0">4</span>
+                    <h2 class="text-[13px] sm:text-[14px] md:text-lg font-bold text-slate-900 uppercase tracking-widest font-merriweather leading-relaxed">Setting Langganan</h2>
+                </div>
+                
+                <!-- Teks Sub-Keterangan Langganan -->
+                <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                    <span class="text-slate-800 font-bold">Langganan</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Pengaturan Periode Free Paket - Pengaturan Harga & Kuota Paket</span>
+                </div>
+                
+                <div class="glass-panel p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 rounded-none relative">
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 text-center sm:text-left">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">
+                                <i data-lucide="calendar-clock" class="w-4 h-4 text-slate-500"></i> Pengaturan Periode Free Paket
+                            </label>
+                        </div>
+                        
+                        <div class="bg-slate-50/60 border border-slate-200 p-4 sm:p-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Awal Periode</label>
+                                    <input type="date" class="ws-input text-xs py-2 cursor-pointer text-slate-600">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Akhir Periode</label>
+                                    <input type="date" class="ws-input text-xs py-2 cursor-pointer text-slate-600">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Max Jumlah User</label>
+                                    <input type="number" class="ws-input text-xs py-2" placeholder="Contoh: 100" min="1">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Jenis Paket</label>
+                                    <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>Pilih Paket...</option>
+                                        <option value="business">Business</option>
+                                        <option value="enterprise">Enterprise</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t border-slate-200/60 my-6">
+
+                    <!-- ▼▼▼ NEW SECTION: Harga & Kuota Paket Business/Enterprise ▼▼▼ -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 text-center sm:text-left">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">
+                                <i data-lucide="tags" class="w-4 h-4 text-slate-500"></i> Pengaturan Harga & Kuota Paket
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Business & Enterprise</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <!-- Card Paket Business -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-5 relative hover:border-slate-300 transition-colors shadow-sm">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 border-b border-slate-200 pb-3 flex items-center gap-2">
+                                    <i data-lucide="building" class="w-3.5 h-3.5 text-slate-500"></i> Paket Business
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Harga Berlangganan (Rp)</label>
+                                        <input type="number" class="ws-input text-xs py-2" placeholder="Contoh: 150000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tipe Kuota Pendaftaran</label>
+                                        <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="" disabled selected>Pilih Tipe Kuota...</option>
+                                            <option value="unlimited">Tanpa Batas (Unlimited)</option>
+                                            <option value="limited">Batasi Nominal Jumlah User</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Maksimal User (Bila Dibatasi)</label>
+                                        <input type="number" class="ws-input text-xs py-2" placeholder="Masukkan jumlah slot (cth: 500)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Paket Enterprise -->
+                            <div class="bg-slate-50/60 border border-slate-200 p-5 relative hover:border-slate-300 transition-colors shadow-sm">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 border-b border-slate-200 pb-3 flex items-center gap-2">
+                                    <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500"></i> Paket Enterprise
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Harga Berlangganan (Rp)</label>
+                                        <input type="number" class="ws-input text-xs py-2" placeholder="Contoh: 450000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tipe Kuota Pendaftaran</label>
+                                        <select class="ws-input text-xs py-2 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                            <option value="" disabled selected>Pilih Tipe Kuota...</option>
+                                            <option value="unlimited">Tanpa Batas (Unlimited)</option>
+                                            <option value="limited">Batasi Nominal Jumlah User</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Maksimal User (Bila Dibatasi)</label>
+                                        <input type="number" class="ws-input text-xs py-2" placeholder="Masukkan jumlah slot (cth: 1000)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ▲▲▲ END NEW SECTION ▲▲▲ -->
+
+                    <div class="text-right pt-6 border-t border-slate-200/60 mt-6">
+                        <button onclick="showToast('Pengaturan Periode & Harga Langganan Berhasil Disimpan!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Data Langganan
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 5. SECTION: LEVEL, KEMITRAAN & ACHIEVEMENT SETTING
+            =========================================== -->
+            <section class="mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 text-center sm:text-left">
+                    <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0 mx-auto sm:mx-0">5</span>
+                    <h2 class="text-[14px] md:text-lg font-bold text-slate-900 uppercase tracking-widest font-merriweather leading-relaxed">Setting Level, Kemitraan & Achievement</h2>
+                </div>
+                
+                <!-- Teks Sub-Keterangan Level & Kemitraan -->
+                <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                    <span class="text-slate-800 font-bold">Level Trader</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Syarat Level Trader, Syarat Kemitraan Trader dan Syarat Achievement Trader (Lencana)</span>
+
+                    <span class="text-slate-800 font-bold">Level Analis</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Syarat Level Analis, Syarat Kemitraan Analis dan Syarat Achievement Analis (Lencana)</span>
+                    
+                    <span class="text-slate-800 font-bold">Level Investor</span>
+                    <span>:</span>
+                    <span class="leading-relaxed">- Syarat Level Investor, Syarat Kemitraan Investor dan Syarat Achievement Investor (Lencana)</span>
+                </div>
+                
+                <div class="glass-panel p-6 sm:p-8 space-y-8 rounded-none relative">
+                    <!-- ==========================================
+                         BAGIAN KHUSUS TRADER
+                    =========================================== -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-slate-500"></i> Syarat Level Trader
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">5 Level (Masing-masing 4 Syarat)</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">1. Neophyte</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Neophyte 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Neophyte 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Neophyte 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Neophyte 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">2. Vanguard</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">3. Virtuoso</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Virtuoso 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Virtuoso 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Virtuoso 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Virtuoso 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">4. Apex</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Apex 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Apex 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Apex 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Apex 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">5. Leviathan</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Leviathan 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Leviathan 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Leviathan 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Leviathan 4..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- Syarat Kemitraan Trader -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="handshake" class="w-4 h-4 text-slate-500"></i> Syarat Kemitraan Trader
+                        </label>
+                        
+                        <div class="bg-slate-50/60 border border-slate-200 p-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Trader 1...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Trader 2...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Trader 3...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">4</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Trader 4...">
+                                </div>
+                                <div class="flex items-center gap-3 lg:col-span-2">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">5</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Trader 5...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- Syarat Achievement Trader (Lencana) -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="award" class="w-4 h-4 text-slate-500"></i> Syarat Achievement Trader (Lencana)
+                        </label>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Lencana 1 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-[#d4af37] flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="medal" class="w-4 h-4"></i> TOPKONSISTENSI
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <!-- Lencana 2 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="trophy" class="w-4 h-4"></i> TOP1TRADER
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <!-- Lencana 3 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-emerald-600 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4"></i> TOPPERSISTENT
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black my-10">
+
+                    <!-- ==========================================
+                         BAGIAN KHUSUS ANALIS
+                    =========================================== -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-slate-500"></i> Syarat Level Analis
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">5 Level (Masing-masing 4 Syarat)</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">1. Initiate</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Initiate 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Initiate 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Initiate 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Initiate 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">2. Sentinel</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sentinel 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sentinel 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sentinel 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sentinel 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">3. Oracle</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Oracle 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Oracle 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Oracle 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Oracle 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">4. Vanguard</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Vanguard 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">5. Illuminator</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Illuminator 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Illuminator 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Illuminator 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Illuminator 4..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- 4.2 Bagian: Syarat Kemitraan -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="handshake" class="w-4 h-4 text-slate-500"></i> Syarat Kemitraan Analis
+                        </label>
+                        
+                        <div class="bg-slate-50/60 border border-slate-200 p-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan 1...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan 2...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan 3...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">4</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan 4...">
+                                </div>
+                                <div class="flex items-center gap-3 lg:col-span-2">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">5</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan 5...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- 4.3 Bagian: Syarat Achievement (Lencana) -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="award" class="w-4 h-4 text-slate-500"></i> Syarat Achievement Analis (Lencana)
+                        </label>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Lencana 1 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-[#d4af37] flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="medal" class="w-4 h-4"></i> TOPKONSISTENSI
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <!-- Lencana 2 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="trophy" class="w-4 h-4"></i> TOP1ANALIS
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <!-- Lencana 3 -->
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-emerald-600 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4"></i> TOPPERSISTENT
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black my-10">
+                    
+                    <!-- ==========================================
+                         BAGIAN KHUSUS INVESTOR
+                    =========================================== -->
+                    <!-- 4.1 Bagian: Level Investor -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="landmark" class="w-4 h-4 text-slate-500"></i> Syarat Level Investor
+                            </label>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">5 Level (Masing-masing 4 Syarat)</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">1. Capital Allocator</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Allocator 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Allocator 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Allocator 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Allocator 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">2. Yield Compounder</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Compounder 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Compounder 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Compounder 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Compounder 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">3. FX Fund Manager</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Manager 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Manager 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Manager 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Manager 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">4. Capital Guardian</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Guardian 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Guardian 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Guardian 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Guardian 4..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/60 border border-slate-200 p-4 relative hover:border-slate-300 transition-colors lg:col-span-2 lg:w-1/2 lg:mx-auto">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-slate-800 border-b border-slate-200 pb-2">5. Liquidity Sovereign</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sovereign 1..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sovereign 2..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sovereign 3..."></div>
+                                    <div><input type="text" class="ws-input text-xs py-2" placeholder="Syarat Sovereign 4..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- 4.2 Bagian: Syarat Kemitraan Investor -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="briefcase" class="w-4 h-4 text-slate-500"></i> Syarat Kemitraan Investor
+                        </label>
+                        
+                        <div class="bg-slate-50/60 border border-slate-200 p-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Investor 1...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Investor 2...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Investor 3...">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">4</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Investor 4...">
+                                </div>
+                                <div class="flex items-center gap-3 lg:col-span-2">
+                                    <span class="w-6 h-6 bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">5</span>
+                                    <input type="text" class="ws-input text-xs flex-1 py-2" placeholder="Syarat Kemitraan Investor 5...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-t-2 border-black border-dashed my-6">
+
+                    <!-- 4.3 Bagian: Syarat Achievement Investor (Lencana) -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <i data-lucide="award" class="w-4 h-4 text-slate-500"></i> Syarat Achievement Investor (Lencana)
+                        </label>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-[#d4af37] flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="vault" class="w-4 h-4"></i> HERITAGEFUND
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="pie-chart" class="w-4 h-4"></i> DIVERSIFIED
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 shadow-sm hover:border-black transition-colors">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-emerald-600 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <i data-lucide="whale" class="w-4 h-4"></i> WHALEINVESTOR
+                                </h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 1</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 2</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                    <div><label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Syarat 3</label><input type="text" class="ws-input text-xs py-2" placeholder="Masukkan syarat..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-right pt-6 border-t border-slate-200/60">
+                        <button onclick="showToast('Pengaturan Level, Kemitraan & Achievement Berhasil Disimpan!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Data Pengaturan
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 mb-6">
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 text-left">
+                        <span class="font-light text-lg md:text-xl tracking-widest text-white font-merriweather block mb-2">LEODRA<span class="text-xs md:text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                        <p class="text-[11px] md:text-xs leading-relaxed text-left">
+                            Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 flex flex-col items-start md:pl-8 lg:pl-16 w-full mt-2 md:mt-0">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3 border-b border-slate-800 pb-2 w-full max-w-[200px] text-left">Navigasi Admin</h4>
+                        <div class="grid grid-cols-1 gap-y-2 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[280px]">
+                            <a href="masuk.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="log-in" class="w-3 h-3 text-slate-500"></i> Masuk</a>
+                            <a href="workspace.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="layout-dashboard" class="w-3 h-3 text-slate-500"></i> Workspace</a>
+                            <a href="setting_system.html" class="text-white transition-colors flex items-center gap-1.5"><i data-lucide="settings" class="w-3 h-3 text-white"></i> <span class="border-b border-white pb-0.5">Setting System</span></a>
+                            <a href="information_user.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="users" class="w-3 h-3 text-slate-500"></i> Information User</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 text-[9px] md:text-[10px] text-slate-500 text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Akses:</strong> Halaman ini bersifat rahasia dan hanya diperuntukkan bagi Administrator sistem LEODRA tingkat pusat. Segala bentuk modifikasi data direkam dalam log aktivitas.
+                    </div>
+                    <div class="flex flex-col items-start lg:items-end gap-1 flex-shrink-0 mt-2 lg:mt-0">
+                        <p>&copy; 2026 LEODRA System Admin. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ▼▼▼ LOGIKA JAVASCRIPT ▼▼▼ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+        });
+
+        window.toggleMenu = function() {
+            const m = document.getElementById('mobile-menu');
+            const iconMenu = document.getElementById('icon-menu');
+            const iconClose = document.getElementById('icon-close');
+            
+            if(m) { 
+                m.classList.toggle('translate-x-full'); 
+                const isOpen = !m.classList.contains('translate-x-full');
+                
+                document.body.style.overflow = isOpen ? 'hidden' : 'auto'; 
+                
+                if(isOpen) {
+                    if(iconMenu) { iconMenu.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconMenu.classList.add('scale-0', 'rotate-90', 'opacity-0'); }
+                    if(iconClose) { iconClose.classList.remove('scale-0', '-rotate-90', 'opacity-0'); iconClose.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                } else {
+                    if(iconClose) { iconClose.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconClose.classList.add('scale-0', '-rotate-90', 'opacity-0'); }
+                    if(iconMenu) { iconMenu.classList.remove('scale-0', 'rotate-90', 'opacity-0'); iconMenu.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                }
+            }
+        }
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('desktop-sidebar');
+            const wrapper = document.getElementById('main-wrapper');
+            if(sidebar) {
+                sidebar.classList.toggle('is-collapsed');
+                if (sidebar.classList.contains('is-collapsed')) {
+                    if(wrapper) {
+                        wrapper.classList.remove('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.add('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                } else {
+                    if(wrapper) {
+                        wrapper.classList.add('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.remove('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                }
+            }
+        }
+
+        window.showToast = function(message) {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `bg-black text-white px-5 py-3.5 border border-slate-800 rounded-none shadow-2xl font-medium text-sm transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-3`;
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-[#d4af37] shrink-0"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            if(window.lucide) window.lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

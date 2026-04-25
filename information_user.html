@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pengaturan Akun - LEODRA</title>
+    
+    <!-- FIX: Script Anti-Error ResizeObserver -->
+    <script>
+      const _originalError = console.error;
+      console.error = (...args) => {
+        if (/ResizeObserver loop/.test(args[0])) return;
+        _originalError.apply(console, args);
+      };
+      window.addEventListener('error', e => {
+        if (e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Gaya Global & Font Khusus Header */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; } /* Sisi tajam */
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        /* Responsive Zoom adjustment for large screens only */
+        @media screen and (min-width: 1280px) { body { zoom: 0.8; } }
+        
+        /* Margin top to clear fixed header */
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi & Collapse */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Form Controls Custom */
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0; /* Tajam sesuai tema */
+            background-color: #f8fafc;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Modal Pop-up Glow effect */
+        .modal-glow {
+            box-shadow: 0 0 40px -10px rgba(255, 255, 255, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Animasi Transisi Tab Konten Baru */
+        @keyframes slideInRight {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in-right {
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .ws-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0; 
+            background-color: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+            outline: none;
+            color: #0f172a;
+        }
+        .ws-input:focus {
+            border-color: #0f172a;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA LEODRA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <div class="flex items-center flex-shrink-0 cursor-pointer" onclick="window.location.href='index.html'">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather">LEODRA<span class="text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather mt-1">Admin System</p>
+                    </div>
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-24 pb-4 overflow-y-auto">
+        <div class="flex-1 px-6 py-2 flex flex-col w-full">
+            
+            <h4 class="text-[11px] font-bold tracking-widest uppercase text-slate-400 mb-3.5">Navigasi Admin</h4>
+            <ul class="flex flex-col w-full text-left space-y-1.5">
+                <li class="border-b border-slate-200">
+                    <a href="masuk.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="log-in" class="w-[18px] h-[18px]"></i> <span>Masuk</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-200">
+                    <a href="workspace.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i> <span>Workspace</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-200">
+                    <a href="setting_system.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="settings" class="w-[18px] h-[18px]"></i> <span>Setting System</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <!-- INFORMATION USER AKTIF -->
+                <li class="border-b border-black">
+                    <a href="information_user.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="users" class="w-[18px] h-[18px]"></i> <span>Information User</span></div>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto pt-8 pb-4">
+                <span class="font-light text-lg tracking-widest text-black font-merriweather block mb-1.5">LEODRA<span class="text-[10px] text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                <p class="text-[11px] leading-relaxed text-slate-500 text-justify">
+                    Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP (KIRI) ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white/90 backdrop-blur-md border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <div class="flex items-center justify-between px-2 mb-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Menu Admin</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-black hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <a href="masuk.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Masuk</span>
+            </a>
+            <a href="workspace.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Workspace</span>
+            </a>
+            <a href="setting_system.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="settings" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Setting System</span>
+            </a>
+            <!-- INFORMATION USER AKTIF -->
+            <a href="information_user.html" class="flex items-center px-4 py-3 text-[14px] font-medium rounded-none bg-black text-white shadow-md transition-all duration-300 mt-2">
+                <i data-lucide="users" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Information User</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ▼▼▼ KONTEN UTAMA INFORMATION USER ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative">
+        <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full mb-10 overflow-hidden">
+            
+            <div class="mb-8 sm:mb-10 text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-light text-gray-900 mb-4 uppercase tracking-widest font-merriweather">Informasi Pengguna</h1>
+                <hr class="border-t border-slate-200 mb-4 max-w-3xl mx-auto md:mx-0">
+                <p class="text-[11px] text-slate-500 uppercase tracking-widest font-medium">Direktori Lengkap, Peran, dan Status Akses Pengguna Terdaftar</p>
+            </div>
+
+            <!-- ▼▼▼ 1. SECTION: VERIFIKASI KYC MASUK ▼▼▼ -->
+            <section class="mb-10">
+                <div class="glass-panel p-5 sm:p-6 rounded-none relative">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0">
+                                1
+                            </span>
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Manajemen Verifikasi KYC</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Tinjau dan kelola dokumen identitas pengguna</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Jumlah Total KYC -->
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
+                            <div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-4 py-2.5 uppercase tracking-widest shadow-sm w-full sm:w-auto text-center flex items-center justify-center gap-2">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> KYC Selesai: 14.500
+                            </div>
+                            <div class="bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold px-4 py-2.5 uppercase tracking-widest shadow-sm w-full sm:w-auto text-center flex items-center justify-center gap-2">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Menunggu: 5
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teks Sub-Keterangan KYC -->
+                    <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                        <span class="text-slate-800 font-bold">Pengaturan</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- Verifikasi data diri (KYC)</span>
+                    </div>
+
+                    <!-- TABEL A: MENUNGGU VERIFIKASI -->
+                    <div class="mb-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                            <h3 class="text-[10px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="file-clock" class="w-3 h-3"></i> Antrian Menunggu
+                            </h3>
+                            <button onclick="if(confirm('Anda yakin ingin menyetujui seluruh antrian KYC secara otomatis?')) alert('Semua data KYC di antrian telah berhasil disetujui.');" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 shadow-sm w-full sm:w-auto">
+                                <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Verifikasi Semua
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto border border-slate-200">
+                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[1000px]">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-12 text-center">No.</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Data Pengguna</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Tipe Dokumen</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Submit</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Catatan Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs text-slate-700">
+                                    <!-- Menunggu 1 -->
+                                    <tr class="hover:bg-amber-50/30 transition-colors border-b border-slate-100">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 align-top pt-4">1</td>
+                                        <td class="p-3 align-top">
+                                            <div class="font-semibold text-slate-800 mb-1">Budi Santoso</div>
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">budi.santoso@gmail.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 24 24">
+                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                                </svg> Google SSO
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 text-[9px] uppercase tracking-wider font-medium">Kartu Tanda Penduduk (KTP)</span></td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">Hari ini, 09:15 WIB</td>
+                                        <td class="p-3 align-top pt-3.5"><span class="bg-amber-100 text-amber-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-amber-200">Menunggu</span></td>
+                                        <td class="p-3 text-center align-top pt-3.5">
+                                            <div class="flex justify-center gap-2">
+                                                <button onclick="openKYCModal('menunggu')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors" title="Lihat Dokumen"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
+                                                <button class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors" title="Tolak KYC"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                                                <button class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors" title="Setujui KYC"><i data-lucide="check" class="w-3.5 h-3.5"></i></button>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-3.5">
+                                            <input type="text" class="ws-input text-[10px] py-1.5 px-2 bg-slate-50/50 border-slate-200 w-full min-w-[180px] focus:bg-white" placeholder="Ketik jika data kurang jelas...">
+                                        </td>
+                                    </tr>
+
+                                    <!-- Menunggu 2 -->
+                                    <tr class="hover:bg-amber-50/30 transition-colors border-b border-slate-100">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 align-top pt-4">2</td>
+                                        <td class="p-3 align-top">
+                                            <div class="font-semibold text-slate-800 mb-1">Rizky Pratama</div>
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">rizky.p99@icloud.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 384 512" fill="currentColor">
+                                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                                </svg> Apple ID
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 text-[9px] uppercase tracking-wider font-medium">Kartu Tanda Penduduk (KTP)</span></td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">Hari ini, 10:20 WIB</td>
+                                        <td class="p-3 align-top pt-3.5"><span class="bg-amber-100 text-amber-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-amber-200">Menunggu</span></td>
+                                        <td class="p-3 text-center align-top pt-3.5">
+                                            <div class="flex justify-center gap-2">
+                                                <button onclick="openKYCModal('menunggu')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors" title="Lihat Dokumen"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
+                                                <button class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors" title="Tolak KYC"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                                                <button class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors" title="Setujui KYC"><i data-lucide="check" class="w-3.5 h-3.5"></i></button>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-3.5">
+                                            <input type="text" class="ws-input text-[10px] py-1.5 px-2 bg-slate-50/50 border-slate-200 w-full min-w-[180px] focus:bg-white" placeholder="Ketik jika data kurang jelas...">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABEL B: RIWAYAT SUDAH DIVERIFIKASI -->
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                            <h3 class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2"><i data-lucide="check-square" class="w-3 h-3"></i> Riwayat Verifikasi Selesai</h3>
+                            
+                            <!-- Kolom Search untuk Tabel Riwayat KYC -->
+                            <div class="relative w-full sm:w-64">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                <input type="text" id="kyc-history-search-input" onkeyup="filterKycHistory()" class="ws-input pl-9 text-[10px] py-2 bg-white w-full border-slate-200 shadow-sm" placeholder="Cari nama atau email riwayat...">
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto border border-slate-200">
+                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[1000px]">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-12 text-center">No.</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Data Pengguna</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Tipe Dokumen</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Submit</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Keputusan</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs text-slate-700">
+                                    <!-- Selesai 1 -->
+                                    <tr class="hover:bg-emerald-50/30 transition-colors border-b border-slate-100 opacity-90 kyc-history-row">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 align-top pt-4">1</td>
+                                        <td class="p-3 align-top">
+                                            <div class="font-semibold text-slate-800 mb-1">Amanda Putri</div>
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">amanda.p@icloud.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 384 512" fill="currentColor">
+                                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                                </svg> Apple ID
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 text-[9px] uppercase tracking-wider font-medium">Kartu Tanda Penduduk (KTP)</span></td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">Kemarin, 09:15 WIB</td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">Kemarin, 14:30 WIB</td>
+                                        <td class="p-3 align-top pt-3.5"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-emerald-200">Disetujui</span></td>
+                                        <td class="p-3 text-center align-top pt-3.5">
+                                            <div class="flex justify-center gap-2">
+                                                <button onclick="openKYCModal('disetujui')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Lihat Riwayat Dokumen"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Selesai 2 (Ditolak) -->
+                                    <tr class="hover:bg-rose-50/30 transition-colors border-b border-slate-100 opacity-90 kyc-history-row">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 align-top pt-4">2</td>
+                                        <td class="p-3 align-top">
+                                            <div class="font-semibold text-slate-800 mb-1">Steven Kusuma</div>
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">steven.ksm@gmail.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 24 24">
+                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                                </svg> Google SSO
+                                            </div>
+                                        </td>
+                                        <td class="p-3 align-top pt-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 text-[9px] uppercase tracking-wider font-medium">Kartu Tanda Penduduk (KTP)</span></td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">17 Apr 2026, 16:20 WIB</td>
+                                        <td class="p-3 align-top pt-4 text-[10px] text-slate-500">18 Apr 2026, 08:10 WIB</td>
+                                        <td class="p-3 align-top pt-3.5">
+                                            <span class="bg-rose-100 text-rose-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-rose-200 block w-max mb-1">Ditolak</span>
+                                            <span class="text-[8px] text-rose-500 font-bold block max-w-[120px] leading-tight">Alasan: Foto Buram</span>
+                                        </td>
+                                        <td class="p-3 text-center align-top pt-3.5">
+                                            <div class="flex justify-center gap-2">
+                                                <button onclick="openKYCModal('ditolak')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Lihat Riwayat Dokumen"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ▼▼▼ 2. SECTION: TIKET DUKUNGAN MASUK ▼▼▼ -->
+            <section class="mb-10">
+                <div class="glass-panel p-5 sm:p-6 lg:p-8 rounded-none relative">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0">
+                                2
+                            </span>
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Tiket Dukungan Masuk</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Laporan kendala atau pertanyaan pengguna</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Indikator Total -->
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
+                            <span class="bg-black text-white text-[9px] font-bold px-4 py-2.5 uppercase tracking-widest shadow-sm w-full sm:w-auto text-center">
+                                2 Tiket Menunggu Balasan
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Teks Sub-Keterangan Tiket Dukungan -->
+                    <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                        <span class="text-slate-800 font-bold">Top Analis dan Trader</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- support</span>
+                        
+                        <span class="text-slate-800 font-bold">Lainnya</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- support</span>
+                        
+                        <span class="text-slate-800 font-bold">Langganan</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- Pusat Layanan Pelanggan</span>
+                    </div>
+
+                    <!-- TABEL A: TIKET MENUNGGU BALASAN -->
+                    <div class="mb-8">
+                        <h3 class="text-[10px] font-bold text-rose-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <i data-lucide="clock" class="w-3 h-3"></i> Menunggu Balasan <span class="text-slate-400 font-medium normal-case ml-1">(2 Tiket)</span>
+                        </h3>
+                        <div class="overflow-x-auto border border-slate-200">
+                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[1100px]">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-12 text-center">No.</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pengguna</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Akun Tertaut</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Pengajuan</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Kategori</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Subjek & Pesan</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs text-slate-700">
+                                    <!-- Menunggu 1 -->
+                                    <tr class="hover:bg-rose-50/30 transition-colors border-b border-slate-100 align-top">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 pt-4">1</td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-semibold text-slate-800">Reza Alfian</div>
+                                            <div class="text-[9px] font-normal text-slate-400 mt-0.5 uppercase tracking-widest">Trader</div>
+                                        </td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">reza.alfian@gmail.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 24 24">
+                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                                </svg> Google SSO
+                                            </div>
+                                        </td>
+                                        <td class="p-3 pt-4 text-[10px] text-slate-500">Hari ini, 08:30 WIB</td>
+                                        <td class="p-3 pt-4"><span class="text-[10px] text-indigo-600 font-bold tracking-wide uppercase">Teknis</span></td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-bold text-slate-800 mb-1 truncate max-w-[200px]" title="Gagal login menggunakan akun Google">Gagal login aplikasi MT4</div>
+                                            <div class="text-[9px] text-slate-500 truncate max-w-[250px]" title="Saya sudah mencoba login tapi connection error terus">Saya sudah mencoba login tapi connection error terus...</div>
+                                        </td>
+                                        <td class="p-3 pt-3.5"><span class="bg-rose-100 text-rose-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-rose-200">Menunggu Balasan</span></td>
+                                        <td class="p-3 pt-3.5 text-center">
+                                            <button onclick="openTicketModal('reply', 'TKT-10024', 'Reza Alfian', 'Gagal login aplikasi MT4', 'Saya sudah mencoba login tapi connection error terus. Mohon panduannya untuk integrasi MT4.')" class="bg-slate-100 hover:bg-black hover:text-white text-slate-600 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest transition-colors shadow-sm">Balas Tiket</button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Menunggu 2 -->
+                                    <tr class="hover:bg-rose-50/30 transition-colors border-b border-slate-100 align-top">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 pt-4">2</td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-semibold text-slate-800">Anton Wijaya</div>
+                                            <div class="text-[9px] font-normal text-slate-400 mt-0.5 uppercase tracking-widest">Analis</div>
+                                        </td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">anton.analisis@icloud.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 384 512" fill="currentColor">
+                                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                                </svg> Apple ID
+                                            </div>
+                                        </td>
+                                        <td class="p-3 pt-4 text-[10px] text-slate-500">Hari ini, 09:45 WIB</td>
+                                        <td class="p-3 pt-4"><span class="text-[10px] text-blue-600 font-bold tracking-wide uppercase">Operasional</span></td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-bold text-slate-800 mb-1 truncate max-w-[200px]" title="Pencairan komisi belum masuk">Pencairan komisi belum masuk</div>
+                                            <div class="text-[9px] text-slate-500 truncate max-w-[250px]" title="Sudah 1x24 jam sejak withdrawal tapi dana belum cair ke BCA">Sudah 1x24 jam sejak withdrawal tapi dana belum cair...</div>
+                                        </td>
+                                        <td class="p-3 pt-3.5"><span class="bg-rose-100 text-rose-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-rose-200">Menunggu Balasan</span></td>
+                                        <td class="p-3 pt-3.5 text-center">
+                                            <button onclick="openTicketModal('reply', 'TKT-10025', 'Anton Wijaya', 'Pencairan komisi belum masuk', 'Sudah 1x24 jam sejak withdrawal tapi dana belum cair ke rekening BCA saya. Mohon dicek sistemnya.')" class="bg-slate-100 hover:bg-black hover:text-white text-slate-600 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest transition-colors shadow-sm">Balas Tiket</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABEL B: RIWAYAT TIKET SELESAI -->
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                            <h3 class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="check-square" class="w-3 h-3"></i> Tiket Telah Dibalas (Selesai) <span class="text-slate-400 font-medium normal-case ml-1">(12 Tiket)</span>
+                            </h3>
+                            
+                            <!-- Kolom Search -->
+                            <div class="relative w-full sm:w-64">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                <input type="text" id="ticket-history-search-input" onkeyup="filterTicketHistory()" class="ws-input pl-9 text-[10px] py-2 bg-white w-full border-slate-200 shadow-sm" placeholder="Cari username atau subjek tiket...">
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto border border-slate-200">
+                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[1200px]">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-12 text-center">No.</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pengguna</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Akun Tertaut</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Pengajuan</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Dibalas</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Kategori</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Subjek & Pesan</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                        <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs text-slate-700">
+                                    <!-- Row Selesai 1 -->
+                                    <tr class="hover:bg-emerald-50/30 transition-colors border-b border-slate-100 align-top opacity-90 ticket-history-row">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 pt-4">1</td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-semibold text-slate-800">Diana Kusuma</div>
+                                            <div class="text-[9px] font-normal text-slate-400 mt-0.5 uppercase tracking-widest">Investor</div>
+                                        </td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">diana.k@icloud.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 384 512" fill="currentColor">
+                                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                                </svg> Apple ID
+                                            </div>
+                                        </td>
+                                        <td class="p-3 pt-4 text-[10px] text-slate-500">Kemarin, 14:00 WIB</td>
+                                        <td class="p-3 pt-4 text-[10px] text-emerald-600 font-medium">Kemarin, 15:30 WIB</td>
+                                        <td class="p-3 pt-4"><span class="text-[10px] text-amber-600 font-bold tracking-wide uppercase">Pembayaran</span></td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-bold text-slate-800 mb-1 truncate max-w-[200px]" title="Konfirmasi langganan premium bulanan">Konfirmasi langganan premium</div>
+                                            <div class="text-[9px] text-slate-500 truncate max-w-[250px]" title="Saya sudah transfer lewat VA tapi saldo LeodraPay belum bertambah">Saya sudah transfer lewat VA tapi saldo LeodraPay belum...</div>
+                                        </td>
+                                        <td class="p-3 pt-3.5"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-emerald-200">Selesai Dibalas</span></td>
+                                        <td class="p-3 pt-3.5 text-center">
+                                            <button onclick="openTicketModal('view', 'TKT-10023', 'Diana Kusuma', 'Konfirmasi langganan premium', 'Saya sudah transfer lewat VA tapi saldo LeodraPay belum bertambah, sudah saya refresh berkali-kali.', 'Selamat siang Ibu Diana. Kami telah melakukan sinkronisasi ulang dengan pihak payment gateway. Saldo LeodraPay Anda saat ini sudah berhasil masuk ke akun. Mohon diperiksa kembali. Terima kasih.')" class="bg-slate-100 hover:bg-black hover:text-white text-slate-600 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest transition-colors shadow-sm">Lihat Respon</button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row Selesai 2 -->
+                                    <tr class="hover:bg-emerald-50/30 transition-colors border-b border-slate-100 align-top opacity-90 ticket-history-row">
+                                        <td class="p-3 text-center text-[10px] font-bold text-slate-400 pt-4">2</td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-semibold text-slate-800">Farhan Malik</div>
+                                            <div class="text-[9px] font-normal text-slate-400 mt-0.5 uppercase tracking-widest">Trader</div>
+                                        </td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-mono text-[10px] text-slate-500 mb-1.5">farhan.malik@gmail.com</div>
+                                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-600 uppercase tracking-widest">
+                                                <svg class="w-3 h-3" viewBox="0 0 24 24">
+                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                                </svg> Google SSO
+                                            </div>
+                                        </td>
+                                        <td class="p-3 pt-4 text-[10px] text-slate-500">18 Apr 2026, 09:15 WIB</td>
+                                        <td class="p-3 pt-4 text-[10px] text-emerald-600 font-medium">18 Apr 2026, 11:20 WIB</td>
+                                        <td class="p-3 pt-4"><span class="text-[10px] text-teal-600 font-bold tracking-wide uppercase">Akun</span></td>
+                                        <td class="p-3 pt-4">
+                                            <div class="font-bold text-slate-800 mb-1 truncate max-w-[200px]" title="Permintaan reset device MT4">Permintaan reset device MT4</div>
+                                            <div class="text-[9px] text-slate-500 truncate max-w-[250px]" title="Tolong reset sesi login saya karena ganti handphone baru">Tolong reset sesi login saya karena ganti handphone...</div>
+                                        </td>
+                                        <td class="p-3 pt-3.5"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-emerald-200">Selesai Dibalas</span></td>
+                                        <td class="p-3 pt-3.5 text-center">
+                                            <button onclick="openTicketModal('view', 'TKT-10022', 'Farhan Malik', 'Permintaan reset device MT4', 'Tolong reset sesi login terminal MT4 saya karena saya baru ganti handphone baru kemarin.', 'Halo Pak Farhan. Kami telah mengirimkan tautan (link) reset device ke alamat email terdaftar Anda (farhan.malik@gmail.com). Silakan ikuti instruksi pada email tersebut untuk login kembali di perangkat baru.')" class="bg-slate-100 hover:bg-black hover:text-white text-slate-600 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest transition-colors shadow-sm">Lihat Respon</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ▼▼▼ 3 & 4. SECTION: KOMUNIKASI & SIARAN PENGGUNA (DIGABUNG) ▼▼▼ -->
+            <section class="mb-8">
+                <div class="glass-panel p-5 sm:p-6 lg:p-8 rounded-none relative">
+                    
+                    <!-- DATA BAGIAN 3: SIARAN INFORMASI -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0">
+                                3
+                            </span>
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Siaran Informasi Umum</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Buat dan kirim pengumuman massal ke pengguna</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teks Sub-Keterangan Siaran Informasi -->
+                    <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                        <span class="text-slate-800 font-bold">Top Analis dan Trader</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- notifikasi</span>
+                        
+                        <span class="text-slate-800 font-bold">Lainnya</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- notifikasi</span>
+                    </div>
+
+                    <div class="space-y-5">
+                        <!-- Judul Informasi -->
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul Informasi / Pengumuman</label>
+                            <input type="text" class="ws-input text-xs py-2.5" placeholder="Contoh: Pemeliharaan Sistem Rutin Akhir Pekan...">
+                        </div>
+
+                        <!-- Target Pengguna -->
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Target Pengguna</label>
+                            <select class="ws-input text-xs py-2.5 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                <option value="" disabled selected>Pilih target siaran...</option>
+                                <option value="semua">Semua Pengguna Terdaftar</option>
+                                <option value="analis">Khusus Pengguna Analis</option>
+                                <option value="trader">Khusus Pengguna Trader</option>
+                                <option value="investor">Khusus Pengguna Investor</option>
+                            </select>
+                        </div>
+
+                        <!-- Isi Pesan -->
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Isi Pesan Siaran</label>
+                            <textarea rows="4" class="ws-input text-xs leading-relaxed py-3 resize-y" placeholder="Tuliskan informasi lengkap yang ingin disampaikan kepada pengguna..."></textarea>
+                        </div>
+
+                        <!-- Tombol Kirim -->
+                        <div class="text-right pt-4 border-t border-slate-100">
+                            <button onclick="alert('Siaran informasi berhasil dikirim ke target pengguna!')" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-slate-800 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> Kirim Siaran
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- GARIS PEMISAH TIPIS DAN TEGAS -->
+                    <hr class="border-t border-slate-300 w-full my-10">
+
+                    <!-- DATA BAGIAN: PESAN INTERNAL PENGGUNA -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4 mb-6">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Pesan Internal Pengguna</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Kirim informasi spesifik langsung ke inbox akun pengguna</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                        
+                        <!-- KIRI: Pencarian & Daftar User -->
+                        <div class="flex flex-col h-full">
+                            <!-- Kolom Search -->
+                            <div class="relative mb-3">
+                                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                <input type="text" id="user-search-input" onkeyup="filterUsers()" class="ws-input pl-10 text-xs py-2.5 bg-white" placeholder="Cari username atau email pengguna...">
+                            </div>
+                            
+                            <label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-2">Daftar Pengguna</label>
+                            
+                            <!-- Container List User (Scrollable) -->
+                            <div class="flex-1 overflow-y-auto max-h-[300px] pr-2 space-y-2 border border-slate-200 bg-slate-50/50 p-2">
+                                
+                                <!-- Data User 1 -->
+                                <div class="user-list-item group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-slate-200 hover:border-red-300 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">RA</div>
+                                        <div class="overflow-hidden">
+                                            <h4 class="text-[11px] font-bold text-slate-800 truncate">Reza Alfian</h4>
+                                            <p class="text-[9px] text-slate-500 font-mono truncate">reza.alfian@email.com</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectUserForMessage('Reza Alfian', 'reza.alfian@email.com')" class="text-[9px] font-bold uppercase tracking-widest text-red-600 group-hover:text-white group-hover:bg-red-600 px-3 py-1.5 transition-colors border border-red-200 shrink-0 self-start sm:self-auto">
+                                        Pilih User
+                                    </button>
+                                </div>
+
+                                <!-- Data User 2 -->
+                                <div class="user-list-item group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-slate-200 hover:border-red-300 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">DK</div>
+                                        <div class="overflow-hidden">
+                                            <h4 class="text-[11px] font-bold text-slate-800 truncate">Diana Kusuma</h4>
+                                            <p class="text-[9px] text-slate-500 font-mono truncate">diana.k@investor.co.id</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectUserForMessage('Diana Kusuma', 'diana.k@investor.co.id')" class="text-[9px] font-bold uppercase tracking-widest text-red-600 group-hover:text-white group-hover:bg-red-600 px-3 py-1.5 transition-colors border border-red-200 shrink-0 self-start sm:self-auto">
+                                        Pilih User
+                                    </button>
+                                </div>
+
+                                <!-- Data User 3 -->
+                                <div class="user-list-item group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-slate-200 hover:border-red-300 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">BW</div>
+                                        <div class="overflow-hidden">
+                                            <h4 class="text-[11px] font-bold text-slate-800 truncate">Bima Wijaya</h4>
+                                            <p class="text-[9px] text-slate-500 font-mono truncate">bimawijaya99@gmail.com</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectUserForMessage('Bima Wijaya', 'bimawijaya99@gmail.com')" class="text-[9px] font-bold uppercase tracking-widest text-red-600 group-hover:text-white group-hover:bg-red-600 px-3 py-1.5 transition-colors border border-red-200 shrink-0 self-start sm:self-auto">
+                                        Pilih User
+                                    </button>
+                                </div>
+
+                                <!-- Data User 4 -->
+                                <div class="user-list-item group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-slate-200 hover:border-red-300 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">SL</div>
+                                        <div class="overflow-hidden">
+                                            <h4 class="text-[11px] font-bold text-slate-800 truncate">Sisca Lestari</h4>
+                                            <p class="text-[9px] text-slate-500 font-mono truncate">sisca.lestari@perusahaan.com</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectUserForMessage('Sisca Lestari', 'sisca.lestari@perusahaan.com')" class="text-[9px] font-bold uppercase tracking-widest text-red-600 group-hover:text-white group-hover:bg-red-600 px-3 py-1.5 transition-colors border border-red-200 shrink-0 self-start sm:self-auto">
+                                        Pilih User
+                                    </button>
+                                </div>
+
+                                <!-- Data User 5 -->
+                                <div class="user-list-item group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-slate-200 hover:border-red-300 cursor-pointer transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">AD</div>
+                                        <div class="overflow-hidden">
+                                            <h4 class="text-[11px] font-bold text-slate-800 truncate">Andi Darmawan</h4>
+                                            <p class="text-[9px] text-slate-500 font-mono truncate">anddarmawan@trading.id</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectUserForMessage('Andi Darmawan', 'anddarmawan@trading.id')" class="text-[9px] font-bold uppercase tracking-widest text-red-600 group-hover:text-white group-hover:bg-red-600 px-3 py-1.5 transition-colors border border-red-200 shrink-0 self-start sm:self-auto">
+                                        Pilih User
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- KANAN: Form Pesan Internal -->
+                        <div class="bg-slate-50/80 border border-slate-200 p-5 lg:p-6 flex flex-col h-full relative overflow-hidden">
+                            <!-- Overlay Terkunci (Ditampilkan sebelum user dipilih) -->
+                            <div id="no-user-overlay" class="absolute inset-0 bg-slate-50/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6 transition-opacity duration-300">
+                                <i data-lucide="mouse-pointer-click" class="w-8 h-8 text-slate-300 mb-3"></i>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">Pilih pengguna dari daftar pencarian<br>untuk membuka form pesan internal</p>
+                            </div>
+
+                            <!-- Header Target Penerima -->
+                            <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                    <label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Target Penerima</label>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="user-check" class="w-4 h-4 text-red-600"></i>
+                                        <span id="selected-user-name" class="text-xs font-bold text-slate-800">-</span>
+                                        <span id="selected-user-email" class="text-[9px] text-slate-500 font-mono hidden sm:inline">-</span>
+                                    </div>
+                                </div>
+                                <button onclick="resetMessageForm()" class="text-[9px] text-slate-400 hover:text-rose-600 font-bold uppercase tracking-widest transition-colors flex items-center gap-1">
+                                    <i data-lucide="x-circle" class="w-3 h-3"></i> Batal
+                                </button>
+                            </div>
+
+                            <!-- Input Form -->
+                            <div class="space-y-4 flex-1">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Subjek Pesan Internal</label>
+                                    <input type="text" class="ws-input text-xs py-2.5 bg-white" placeholder="Contoh: Peringatan Aktivitas Akun / Apresiasi...">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Isi Pesan Spesifik</label>
+                                    <textarea rows="6" class="ws-input text-xs leading-relaxed py-3 resize-none bg-white" placeholder="Tuliskan pesan yang hanya akan dilihat oleh target pengguna ini..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Kirim Form Kanan -->
+                            <div class="text-right pt-4 mt-4 border-t border-slate-200">
+                                <button onclick="alert('Pesan internal berhasil dikirim ke ' + document.getElementById('selected-user-name').innerText)" class="bg-black text-white text-[10px] font-bold px-8 py-3 hover:bg-red-700 transition-colors uppercase tracking-widest shadow-md flex items-center gap-2 ml-auto">
+                                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Kirim Pesan
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ▼▼▼ 4. SECTION: PENILAIAN & ULASAN PENGGUNA ▼▼▼ -->
+            <section class="mb-8">
+                <div class="glass-panel p-5 sm:p-6 rounded-none relative">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0">
+                                4
+                            </span>
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Penilaian & Ulasan Pengguna</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Daftar feedback, kritik, dan rating terbaru dari pengguna</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-2 self-start sm:self-auto">
+                            <!-- Badge Total Ulasan Baru -->
+                            <span class="bg-white border border-slate-200 text-slate-700 text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-sm flex items-center gap-1.5 w-full sm:w-auto justify-center">
+                                <i data-lucide="message-square" class="w-3 h-3"></i> Total: 3 Ulasan Masuk
+                            </span>
+                            <!-- Badge Rata-Rata -->
+                            <span class="bg-black text-white text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest shadow-sm flex items-center gap-1.5 w-full sm:w-auto justify-center">
+                                <i data-lucide="star" class="w-3 h-3 fill-current text-yellow-400"></i> Rata-rata 4.8 / 5.0
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Teks Sub-Keterangan Penilaian -->
+                    <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                        <span class="text-slate-800 font-bold">Pengaturan</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- penilaian</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
+                            <thead>
+                                <tr>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pengguna</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Rating</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Ulasan / Komentar</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-xs text-slate-700">
+                                <!-- Data Rating 1 -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                                    <td class="p-3 font-semibold">Alex Wibowo</td>
+                                    <td class="p-3">
+                                        <div class="flex gap-0.5 text-yellow-500">
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 truncate max-w-[300px]" title="Platform yang sangat membantu untuk analisa teknikal! Sinyalnya cepat.">Platform yang sangat membantu untuk analisa tekni...</td>
+                                    <td class="p-3 text-[10px] text-slate-500">Hari ini, 10:45</td>
+                                </tr>
+                                
+                                <!-- Data Rating 2 -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                                    <td class="p-3 font-semibold">Siti Nurbaya</td>
+                                    <td class="p-3">
+                                        <div class="flex gap-0.5 text-yellow-500">
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 text-slate-300"></i>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 truncate max-w-[300px]" title="Modul edukasinya bagus, tapi loading video kadang agak lama.">Modul edukasinya bagus, tapi loading video kadan...</td>
+                                    <td class="p-3 text-[10px] text-slate-500">Kemarin, 16:20</td>
+                                </tr>
+
+                                <!-- Data Rating 3 -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                                    <td class="p-3 font-semibold">Teguh Prakoso</td>
+                                    <td class="p-3">
+                                        <div class="flex gap-0.5 text-yellow-500">
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 truncate max-w-[300px]" title="Sangat detail dan akurat. Saya suka fitur ruang diskusi dengan sesama analis.">Sangat detail dan akurat. Saya suka fitur ruang di...</td>
+                                    <td class="p-3 text-[10px] text-slate-500">18 Apr 2026</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ▼▼▼ 5. SECTION: PENGGUNA BARU TERDAFTAR ▼▼▼ -->
+            <section class="mb-4">
+                <div class="glass-panel p-5 sm:p-6 rounded-none relative">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3 text-center lg:text-left">
+                            <span class="w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold font-merriweather shadow-sm shrink-0">
+                                5
+                            </span>
+                            <div>
+                                <h2 class="text-[12px] md:text-sm font-bold text-slate-900 uppercase tracking-widest font-merriweather">Pengguna Baru Terdaftar</h2>
+                                <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Daftar registrasi akun terbaru beserta metode login</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                            <!-- Data Jumlah Total User Mendaftar -->
+                            <div class="bg-black text-white text-[9px] font-bold px-4 py-2.5 uppercase tracking-widest shadow-sm w-full sm:w-auto text-center shrink-0 flex items-center justify-center gap-2">
+                                <i data-lucide="users" class="w-3.5 h-3.5"></i> Total: 24.500 Pendaftar
+                            </div>
+                            <!-- Kolom Search -->
+                            <div class="relative w-full sm:w-64">
+                                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                <input type="text" id="new-user-search-input" onkeyup="filterNewUsers()" class="ws-input pl-10 text-xs py-2 bg-white w-full border-slate-200" placeholder="Cari username atau email...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teks Sub-Keterangan Pengguna Baru -->
+                    <div class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium w-full grid grid-cols-[150px_10px_1fr] sm:grid-cols-[180px_10px_1fr] gap-x-1 gap-y-2 text-left border-b border-slate-300 pb-5 mb-6 px-1">
+                        <span class="text-slate-800 font-bold">Login</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- Daftar</span>
+                        
+                        <span class="text-slate-800 font-bold">Pengaturan</span>
+                        <span>:</span>
+                        <span class="leading-relaxed">- level trader<br>- level analis<br>- level investor</span>
+                    </div>
+
+                    <div class="overflow-x-auto min-h-[250px] filter-scrollbar">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-[1400px]" id="new-user-table">
+                            <thead>
+                                <tr>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-10 text-center">No.</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Username</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Platform Email</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nama Trader</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nama Analis</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nama Investor</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Nama Level</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Metode SSO</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Waktu Daftar</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Status</th>
+                                    <th class="bg-slate-50/80 border-b border-slate-200 p-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-xs text-slate-700">
+                                <!-- Data User 1: Google -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100 new-user-row">
+                                    <td class="p-3 text-center text-[10px] font-bold text-slate-400">1</td>
+                                    <td class="p-3 font-semibold text-slate-800">budi_trader99</td>
+                                    <td class="p-3 font-mono text-[11px] text-slate-600">budi.santoso@gmail.com</td>
+                                    <td class="p-3 font-mono text-[10px] font-semibold text-slate-800">masterbudi</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 text-[10px] font-bold text-[#800000]">Trader: Vanguard</td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                            </svg>
+                                            Google
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-[10px] text-slate-500">20 Apr 2026, 14:30 WIB</td>
+                                    <td class="p-3 text-center">
+                                        <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 text-[9px] font-bold uppercase tracking-widest block w-max mx-auto">Tidak Diblokir</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="relative inline-block text-left action-menu-container">
+                                            <button onclick="toggleActionMenu('menu-usr-1')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Opsi Akun">
+                                                <i data-lucide="more-vertical" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <div id="menu-usr-1" class="hidden absolute right-0 mt-2 w-36 bg-white border border-slate-200 shadow-xl z-50 py-1 action-menu-dropdown">
+                                                <button onclick="alert('User berhasil diblokir.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-rose-600 hover:bg-rose-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="ban" class="w-3 h-3 text-rose-500"></i> Blokir User</button>
+                                                <button onclick="alert('Blokir user berhasil dibuka.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="unlock" class="w-3 h-3 text-emerald-500"></i> Buka Blokir</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Data User 2: Apple -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100 new-user-row">
+                                    <td class="p-3 text-center text-[10px] font-bold text-slate-400">2</td>
+                                    <td class="p-3 font-semibold text-slate-800">amanda_inv</td>
+                                    <td class="p-3 font-mono text-[11px] text-slate-600">amanda.p@icloud.com</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 font-mono text-[10px] font-semibold text-slate-800">amandaportofolio</td>
+                                    <td class="p-3 text-[10px] font-bold text-[#064E3B]">Investor: Yield Compounder</td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest">
+                                            <svg class="w-4 h-4" viewBox="0 0 384 512" fill="currentColor">
+                                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                            </svg>
+                                            Apple
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-[10px] text-slate-500">20 Apr 2026, 11:15 WIB</td>
+                                    <td class="p-3 text-center">
+                                        <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 text-[9px] font-bold uppercase tracking-widest block w-max mx-auto">Tidak Diblokir</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="relative inline-block text-left action-menu-container">
+                                            <button onclick="toggleActionMenu('menu-usr-2')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Opsi Akun">
+                                                <i data-lucide="more-vertical" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <div id="menu-usr-2" class="hidden absolute right-0 mt-2 w-36 bg-white border border-slate-200 shadow-xl z-50 py-1 action-menu-dropdown">
+                                                <button onclick="alert('User berhasil diblokir.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-rose-600 hover:bg-rose-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="ban" class="w-3 h-3 text-rose-500"></i> Blokir User</button>
+                                                <button onclick="alert('Blokir user berhasil dibuka.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="unlock" class="w-3 h-3 text-emerald-500"></i> Buka Blokir</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Data User 3: Google -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100 new-user-row bg-rose-50/20">
+                                    <td class="p-3 text-center text-[10px] font-bold text-slate-400">3</td>
+                                    <td class="p-3 font-semibold text-slate-800">steven_chart</td>
+                                    <td class="p-3 font-mono text-[11px] text-slate-600">steven.charting@gmail.com</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 font-mono text-[10px] font-semibold text-slate-800">stevenalpha</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 text-[10px] font-bold text-[#14213d]">Analis: Sentinel</td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                            </svg>
+                                            Google
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-[10px] text-slate-500">19 Apr 2026, 09:45 WIB</td>
+                                    <td class="p-3 text-center">
+                                        <span class="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-1 text-[9px] font-bold uppercase tracking-widest block w-max mx-auto">Diblokir</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="relative inline-block text-left action-menu-container">
+                                            <button onclick="toggleActionMenu('menu-usr-3')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Opsi Akun">
+                                                <i data-lucide="more-vertical" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <div id="menu-usr-3" class="hidden absolute right-0 mt-2 w-36 bg-white border border-slate-200 shadow-xl z-50 py-1 action-menu-dropdown">
+                                                <button onclick="alert('User berhasil diblokir.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-rose-600 hover:bg-rose-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="ban" class="w-3 h-3 text-rose-500"></i> Blokir User</button>
+                                                <button onclick="alert('Blokir user berhasil dibuka.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="unlock" class="w-3 h-3 text-emerald-500"></i> Buka Blokir</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Data User 4: Apple -->
+                                <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100 new-user-row">
+                                    <td class="p-3 text-center text-[10px] font-bold text-slate-400">4</td>
+                                    <td class="p-3 font-semibold text-slate-800">lisa.wealth</td>
+                                    <td class="p-3 font-mono text-[11px] text-slate-600">lisa.wealthmgmt@privaterelay.appleid.com</td>
+                                    <td class="p-3 font-mono text-[10px] font-semibold text-slate-800">lisatrade</td>
+                                    <td class="p-3 text-[11px] text-slate-400">-</td>
+                                    <td class="p-3 font-mono text-[10px] font-semibold text-slate-800">lisafund</td>
+                                    <td class="p-3 text-[10px] font-bold text-slate-600"><span class="text-[#800000]">Trader: Neophyte</span><br><span class="text-[#064E3B]">Investor: Cap. Allocator</span></td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest">
+                                            <svg class="w-4 h-4" viewBox="0 0 384 512" fill="currentColor">
+                                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                                            </svg>
+                                            Apple
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-[10px] text-slate-500">18 Apr 2026, 20:10 WIB</td>
+                                    <td class="p-3 text-center">
+                                        <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 text-[9px] font-bold uppercase tracking-widest block w-max mx-auto">Tidak Diblokir</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="relative inline-block text-left action-menu-container">
+                                            <button onclick="toggleActionMenu('menu-usr-4')" class="p-1.5 bg-slate-100 text-slate-600 hover:bg-black hover:text-white transition-colors" title="Opsi Akun">
+                                                <i data-lucide="more-vertical" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <div id="menu-usr-4" class="hidden absolute right-0 mt-2 w-36 bg-white border border-slate-200 shadow-xl z-50 py-1 action-menu-dropdown">
+                                                <button onclick="alert('User berhasil diblokir.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-rose-600 hover:bg-rose-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="ban" class="w-3 h-3 text-rose-500"></i> Blokir User</button>
+                                                <button onclick="alert('Blokir user berhasil dibuka.')" class="w-full text-left px-4 py-2.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-50 uppercase tracking-widest flex items-center gap-2"><i data-lucide="unlock" class="w-3 h-3 text-emerald-500"></i> Buka Blokir</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 mb-6">
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 text-left">
+                        <span class="font-light text-lg md:text-xl tracking-widest text-white font-merriweather block mb-2">LEODRA<span class="text-xs md:text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                        <p class="text-[11px] md:text-xs leading-relaxed text-left">
+                            Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 flex flex-col items-start md:pl-8 lg:pl-16 w-full mt-2 md:mt-0">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3 border-b border-slate-800 pb-2 w-full max-w-[200px] text-left">Navigasi Admin</h4>
+                        <div class="grid grid-cols-1 gap-y-2 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[280px]">
+                            <a href="masuk.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="log-in" class="w-3 h-3 text-slate-500"></i> Masuk</a>
+                            <!-- WORKSPACE TIDAK AKTIF -->
+                            <a href="workspace.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="layout-dashboard" class="w-3 h-3 text-slate-500"></i> Workspace</a>
+                            <a href="setting_system.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="settings" class="w-3 h-3 text-slate-500"></i> Setting System</a>
+                            <!-- INFORMATION USER AKTIF -->
+                            <a href="information_user.html" class="text-white transition-colors flex items-center gap-1.5"><i data-lucide="users" class="w-3 h-3 text-white"></i> <span class="border-b border-white pb-0.5">Information User</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 text-[9px] md:text-[10px] text-slate-500 text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Akses:</strong> Halaman ini bersifat rahasia dan hanya diperuntukkan bagi Administrator sistem LEODRA tingkat pusat. Segala bentuk modifikasi data direkam dalam log aktivitas.
+                    </div>
+                    <div class="flex flex-col items-start lg:items-end gap-1 flex-shrink-0 mt-2 lg:mt-0">
+                        <p>&copy; 2026 LEODRA System Admin. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ▼▼▼ POP-UP MODAL KYC (BRANKAS DATA PRIBADI) ▼▼▼ -->
+    <div id="kyc-modal" class="fixed inset-0 z-[160] hidden flex-col bg-[#f8fafc] transition-all duration-500 opacity-0 transform translate-y-12">
+        <!-- Header Full Screen -->
+        <div class="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12 border-b border-gray-200 bg-white shrink-0 shadow-sm z-20">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-black text-white rounded-none flex items-center justify-center shrink-0 shadow-md">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm md:text-base font-bold text-gray-900 uppercase tracking-widest">Formulir Data KYC</h3>
+                    <p class="text-[9px] md:text-[10px] font-bold text-emerald-600 mt-0.5 uppercase tracking-widest flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Tinjauan Administrator</p>
+                </div>
+            </div>
+            <button onclick="closeKYCModal()" class="w-10 h-10 bg-gray-50 hover:bg-rose-50 hover:text-rose-600 border border-gray-200 rounded-none flex items-center justify-center text-gray-500 transition-colors focus:outline-none shrink-0 group">
+                <i data-lucide="x" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+            </button>
+        </div>
+        
+        <!-- Konten Form KYC di dalam Pop-up -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-20">
+            <div class="max-w-3xl mx-auto w-full">
+                
+                <div class="bg-white p-5 md:p-8 border border-slate-200 shadow-sm relative group" id="form-kyc">
+                    
+                    <div class="space-y-6 md:space-y-8">
+                        
+                        <!-- BAGIAN VERIFIKASI WAJAH (SELFIE) -->
+                        <div class="space-y-4">
+                            <p class="text-[10px] font-extrabold text-slate-800 uppercase tracking-[0.2em] border-l-2 border-black pl-2">Verifikasi Wajah</p>
+                            
+                            <div class="relative border-2 border-dashed border-slate-300 bg-slate-50 p-6 md:p-8 flex flex-col items-center justify-center text-center group" id="container-kyc-selfie">
+                                <div class="w-12 h-12 bg-white border border-slate-200 flex items-center justify-center mb-3 shadow-sm">
+                                    <i data-lucide="image" class="w-5 h-5 text-slate-500"></i>
+                                </div>
+                                <h4 class="text-[11px] font-bold text-slate-800 uppercase tracking-widest mb-1.5">Foto Selfie Pengguna</h4>
+                                <p class="text-[9px] text-slate-500 font-medium leading-relaxed max-w-sm">Foto terlampir di sistem. (Simulasi UI: Pada mode riil, gambar wajah pengguna akan dimuat di kotak ini).</p>
+                            </div>
+                        </div>
+
+                        <hr class="border-t border-slate-100">
+
+                        <!-- BAGIAN 1: IDENTITAS RESMI -->
+                        <div class="space-y-4">
+                            <p class="text-[10px] font-extrabold text-slate-800 uppercase tracking-[0.2em] border-l-2 border-black pl-2">I. Identitas Resmi</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap (Sesuai KTP/Paspor)</label>
+                                    <input type="text" id="kyc-name" class="ws-input text-xs disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium" value="Data Tersimulasi" disabled>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nomor Identitas (KTP / Paspor)</label>
+                                    <input type="text" id="kyc-id" class="ws-input text-xs disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium font-mono" value="1234567890123456" disabled>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Alamat Email Aktif</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <i data-lucide="mail" class="w-4 h-4"></i>
+                                        </span>
+                                        <input type="email" id="kyc-email" class="ws-input text-xs pl-9 disabled:opacity-80 disabled:bg-slate-50 disabled:text-slate-800 cursor-not-allowed font-medium" value="user@simulasi.com" disabled>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nomor Telepon / WA</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-bold text-xs border-r border-slate-200 pr-2">+62</span>
+                                        <input type="text" id="kyc-phone" class="ws-input text-xs pl-[3.25rem] disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium" value="81234567890" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tanggal Lahir</label>
+                                    <input type="text" id="kyc-dob" class="ws-input text-xs text-slate-800 disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 font-medium tracking-wider" value="15 Agustus 1990" disabled>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Jenis Kelamin</label>
+                                    <input type="text" id="kyc-gender" class="ws-input text-xs text-slate-800 disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 font-medium" value="Laki-Laki" disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-t border-slate-100">
+
+                        <!-- BAGIAN 2: DATA DOMISILI -->
+                        <div class="space-y-4">
+                            <p class="text-[10px] font-extrabold text-slate-800 uppercase tracking-[0.2em] border-l-2 border-black pl-2">II. Data Domisili</p>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Alamat Domisili Lengkap</label>
+                                <textarea id="kyc-address" rows="2" class="ws-input text-xs resize-none disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium leading-relaxed" disabled>Jl. Simulasi Data No. 99, RT 01 RW 02, Kelurahan Contoh, Kecamatan Uji Coba</textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Provinsi</label>
+                                    <input type="text" id="kyc-province" class="ws-input text-xs disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium uppercase" value="Jawa Barat" disabled>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kota / Kabupaten</label>
+                                    <input type="text" id="kyc-city" class="ws-input text-xs disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium uppercase" value="Bekasi" disabled>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kode Pos</label>
+                                    <input type="text" id="kyc-postal" class="ws-input text-xs disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium tracking-widest font-mono" value="17111" disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-t border-slate-100">
+
+                        <!-- BAGIAN 3: KARAKTER & PENDIDIKAN -->
+                        <div class="space-y-4">
+                            <p class="text-[10px] font-extrabold text-slate-800 uppercase tracking-[0.2em] border-l-2 border-black pl-2">III. Profil & Psikologi Investor</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pendidikan Terakhir</label>
+                                    <input type="text" id="kyc-education" class="ws-input text-xs text-slate-800 disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 font-medium" value="Sarjana (S1)" disabled>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Karakter / Risiko Trading</label>
+                                    <input type="text" id="kyc-character" class="ws-input text-xs text-slate-800 disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 font-medium" value="Balanced (Medium Risk)" disabled>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Alasan Bergabung di LEODRA</label>
+                                <textarea id="kyc-reason" rows="3" class="ws-input text-xs resize-none disabled:opacity-80 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-800 font-medium leading-relaxed" disabled>Ingin mencoba platform analitik dengan fitur copytrade otomatis dan alat manajemen risiko tingkat lanjut.</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Informasi Keamanan & Tombol Aksi -->
+                        <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                            <p class="text-[9px] text-slate-400 leading-relaxed max-w-xs font-medium">
+                                Data identitas diawasi dengan protokol standar perbankan.
+                            </p>
+                            <button id="btn-action-kyc" class="bg-slate-100 text-slate-400 border border-slate-200 text-[10px] font-bold px-8 py-3.5 opacity-80 cursor-not-allowed uppercase tracking-widest flex items-center justify-center gap-2 w-full sm:w-auto shrink-0" disabled>
+                                <i id="icon-action-kyc" data-lucide="lock" class="w-3.5 h-3.5"></i> <span id="text-action-kyc">Data Terkunci (Read-Only)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ END POP-UP MODAL KYC ▲▲▲ -->
+
+    <!-- ▼▼▼ POP-UP MODAL TIKET DUKUNGAN (MINIMALIS MONOKROM) ▼▼▼ -->
+    <div id="ticket-modal" class="fixed inset-0 z-[170] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4 transition-opacity duration-300 opacity-0">
+        <div class="bg-white w-full max-w-lg border border-slate-300 shadow-2xl rounded-none flex flex-col transform scale-95 transition-transform duration-300" id="ticket-modal-content">
+            
+            <!-- Header Pop-up -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="ticket" class="w-4 h-4 text-slate-600"></i>
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-widest" id="tm-title">Balas Tiket Pengguna</h3>
+                        <p class="text-[9px] text-slate-500 font-mono mt-0.5" id="tm-id">TKT-00000</p>
+                    </div>
+                </div>
+                <button onclick="closeTicketModal()" class="text-slate-400 hover:text-rose-600 transition-colors focus:outline-none">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Body Pop-up -->
+            <div class="p-5 sm:p-6 space-y-5">
+                
+                <!-- Informasi Pengguna & Badge Monokrom Status -->
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pengirim Laporan</p>
+                        <p class="text-sm font-bold text-slate-800" id="tm-user">Nama Pengguna</p>
+                    </div>
+                    <div id="tm-status-badge" class="hidden">
+                        <!-- Ciri Khas Tiket Selesai (Monokrom) -->
+                        <span class="bg-black text-white text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest flex items-center gap-1.5 shadow-sm border border-black">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i> Telah Dibalas
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Laporan / Pertanyaan User -->
+                <div class="bg-slate-50 border border-slate-200 p-4 relative">
+                    <div class="absolute -top-2.5 left-4 bg-white border border-slate-200 px-2 py-0.5 text-[8px] font-bold text-slate-500 uppercase tracking-widest">Pesan / Keluhan Masuk</div>
+                    <h4 class="text-[11px] font-bold text-slate-900 mb-1.5 leading-relaxed" id="tm-subject">Subjek Pesan</h4>
+                    <p class="text-[10px] text-slate-600 leading-relaxed italic font-serif" id="tm-message">"Isi pesan pengguna..."</p>
+                </div>
+
+                <!-- Kolom Balasan/Respon Admin -->
+                <div class="relative pt-2">
+                    <label class="block text-[9px] font-bold text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <i data-lucide="corner-down-right" class="w-3 h-3 text-slate-400"></i> Tanggapan Administrator
+                    </label>
+                    <textarea id="tm-reply-input" rows="5" class="ws-input text-xs resize-none bg-white border-slate-300 focus:border-black p-3 leading-relaxed" placeholder="Ketik balasan Anda secara profesional di sini..."></textarea>
+                </div>
+
+            </div>
+
+            <!-- Footer Action Pop-up -->
+            <div class="px-5 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeTicketModal()" class="px-5 py-2 text-[10px] font-bold text-slate-600 hover:text-black uppercase tracking-widest transition-colors">Tutup Jendela</button>
+                <button id="tm-submit-btn" onclick="submitTicketReply()" class="bg-black text-white px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2 border border-black">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Kirim Respon
+                </button>
+            </div>
+            
+        </div>
+    </div>
+    <!-- ▲▲▲ END POP-UP MODAL TIKET ▲▲▲ -->
+
+    <!-- ▼▼▼ LOGIKA JAVASCRIPT ▼▼▼ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+        });
+
+        // Logika Untuk Menutup Action Menu Jika Klik Di Luar (Diperbarui untuk fitur Portal)
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.action-menu-container') && !event.target.closest('.action-menu-dropdown')) {
+                document.querySelectorAll('.action-menu-dropdown:not(.hidden)').forEach(menu => {
+                    menu.classList.add('hidden');
+                    // Kembalikan elemen ke container aslinya
+                    if (menu.dataset.parentId) {
+                        const parent = document.getElementById(menu.dataset.parentId);
+                        if (parent) parent.appendChild(menu);
+                    }
+                });
+            }
+        });
+
+        // --- Logika Modal Detail KYC Admin ---
+        window.openKYCModal = function(status = 'menunggu') {
+            const modal = document.getElementById('kyc-modal');
+            const btn = document.getElementById('btn-action-kyc');
+            const text = document.getElementById('text-action-kyc');
+            const icon = document.getElementById('icon-action-kyc');
+
+            if(modal) {
+                // Logika Dinamis Untuk Status Tombol
+                if(btn && text && icon) {
+                    btn.className = "text-[10px] font-bold px-8 py-3.5 transition-all shadow-sm uppercase tracking-widest flex items-center justify-center gap-2 w-full sm:w-auto shrink-0 border";
+                    
+                    if(status === 'disetujui') {
+                        btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'cursor-not-allowed');
+                        btn.disabled = true;
+                        text.innerHTML = "DISETUJUI";
+                        icon.setAttribute('data-lucide', 'check-circle');
+                    } else if(status === 'ditolak') {
+                        btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600', 'cursor-not-allowed');
+                        btn.disabled = true;
+                        text.innerHTML = "DITOLAK";
+                        icon.setAttribute('data-lucide', 'x-circle');
+                    } else {
+                        // Default / Antrian Menunggu
+                        btn.classList.add('bg-black', 'text-white', 'hover:bg-slate-800', 'border-black');
+                        btn.disabled = false;
+                        text.innerHTML = "Ajukan Verifikasi";
+                        icon.setAttribute('data-lucide', 'upload-cloud');
+                    }
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+                
+                // Force reflow agar animasi jalan
+                void modal.offsetWidth;
+                
+                modal.classList.remove('opacity-0', 'translate-y-12');
+                modal.classList.add('opacity-100', 'translate-y-0');
+                if(window.lucide) window.lucide.createIcons();
+            }
+        }
+
+        window.closeKYCModal = function() {
+            const modal = document.getElementById('kyc-modal');
+            if(modal) {
+                modal.classList.remove('opacity-100', 'translate-y-0');
+                modal.classList.add('opacity-0', 'translate-y-12');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.style.overflow = 'auto';
+                }, 500);
+            }
+        }
+        
+        // --- Logika Modal Tiket Dukungan (Monokrom & Minimalis) ---
+        window.openTicketModal = function(mode, id, user, subject, message, reply = '') {
+            const modal = document.getElementById('ticket-modal');
+            const content = document.getElementById('ticket-modal-content');
+            
+            if(modal) {
+                // Set Data ke dalam Pop-up
+                document.getElementById('tm-id').textContent = id;
+                document.getElementById('tm-user').textContent = user;
+                document.getElementById('tm-subject').textContent = subject;
+                document.getElementById('tm-message').textContent = `"${message}"`;
+                
+                const replyInput = document.getElementById('tm-reply-input');
+                const statusBadge = document.getElementById('tm-status-badge');
+                const submitBtn = document.getElementById('tm-submit-btn');
+
+                if(mode === 'view') {
+                    // MODE: LIHAT RESPON (Kondisi Tiket Selesai)
+                    replyInput.value = reply;
+                    replyInput.disabled = true; // Kunci textarea
+                    replyInput.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-600');
+                    replyInput.classList.remove('bg-white');
+                    
+                    statusBadge.classList.remove('hidden'); // Tampilkan badge hitam ciri khas
+                    submitBtn.classList.add('hidden'); // Sembunyikan tombol kirim
+                    document.getElementById('tm-title').textContent = "Detail Respon Tiket";
+                } else {
+                    // MODE: BALAS TIKET (Kondisi Antrian Menunggu)
+                    replyInput.value = '';
+                    replyInput.disabled = false; // Buka kunci textarea
+                    replyInput.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-600');
+                    replyInput.classList.add('bg-white');
+                    
+                    statusBadge.classList.add('hidden');
+                    submitBtn.classList.remove('hidden'); // Tampilkan tombol kirim
+                    document.getElementById('tm-title').textContent = "Balas Tiket Pengguna";
+                }
+
+                // Munculkan Pop-up dengan Animasi
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+                
+                // Force reflow
+                void modal.offsetWidth;
+                
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+                
+                if(window.lucide) window.lucide.createIcons();
+            }
+        }
+
+        window.closeTicketModal = function() {
+            const modal = document.getElementById('ticket-modal');
+            const content = document.getElementById('ticket-modal-content');
+            
+            if(modal) {
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.style.overflow = 'auto';
+                }, 300); // Sesuaikan dengan durasi animasi
+            }
+        }
+
+        window.submitTicketReply = function() {
+            const reply = document.getElementById('tm-reply-input').value;
+            if(!reply.trim()) {
+                alert('Mohon ketikkan balasan atau respon terlebih dahulu.');
+                return;
+            }
+            
+            // Simulasi sukses
+            alert('Balasan tiket berhasil dikirim ke pengguna.');
+            closeTicketModal();
+        }
+
+        // Logika Dropdown Menu Aksi Pengguna Baru (Diperbarui Anti-Potong / Portal System)
+        window.toggleActionMenu = function(id) {
+            const menu = document.getElementById(id);
+            const isHidden = menu ? menu.classList.contains('hidden') : true;
+
+            // 1. Tutup semua menu yang sedang terbuka
+            document.querySelectorAll('.action-menu-dropdown:not(.hidden)').forEach(m => {
+                m.classList.add('hidden');
+                if (m.dataset.parentId) {
+                    const parent = document.getElementById(m.dataset.parentId);
+                    if (parent) parent.appendChild(m);
+                }
+            });
+
+            if (menu && isHidden) {
+                // Cari tombol pemantik
+                const btn = document.querySelector(`button[onclick="toggleActionMenu('${id}')"]`);
+                if (!btn) return;
+
+                // 2. Pindahkan menu ke <body> (Portal) agar terbebas dari jebakan overflow-x tabel
+                const parent = menu.parentElement;
+                if (parent && parent.tagName !== 'BODY') {
+                    if (!parent.id) parent.id = 'parent-container-' + id;
+                    menu.dataset.parentId = parent.id;
+                    document.body.appendChild(menu);
+                }
+
+                // 3. Setup styling fix
+                menu.classList.remove('hidden', 'absolute', 'right-0', 'mt-2', 'bottom-full', 'mb-2');
+                menu.classList.add('fixed');
+                menu.style.zIndex = '999999';
+
+                // 4. Kalkulasi Koordinat Responsif secara presisi
+                const btnRect = btn.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+
+                let topPos = btnRect.bottom + 8;
+                let leftPos = btnRect.right - menuRect.width;
+
+                // Jika area bawah layar tidak muat, paksa pop-up muncul ke atas tombol
+                if (topPos + menuRect.height > window.innerHeight) {
+                    topPos = btnRect.top - menuRect.height - 8;
+                }
+                
+                // Jaga agar tidak keluar dari sisi kiri layar HP
+                if (leftPos < 0) {
+                    leftPos = 16; 
+                }
+
+                menu.style.top = topPos + 'px';
+                menu.style.left = leftPos + 'px';
+            } else if (menu && !isHidden) {
+                // Tutup jika diklik ulang
+                menu.classList.add('hidden');
+                if (menu.dataset.parentId) {
+                    const parent = document.getElementById(menu.dataset.parentId);
+                    if (parent) parent.appendChild(menu);
+                }
+            }
+        };
+
+        // 5. Sembunyikan otomatis jika user melakukan scrolling agar tidak melayang aneh
+        window.addEventListener('scroll', function() {
+            document.querySelectorAll('.action-menu-dropdown:not(.hidden)').forEach(m => {
+                m.classList.add('hidden');
+                if (m.dataset.parentId) {
+                    const parent = document.getElementById(m.dataset.parentId);
+                    if (parent) parent.appendChild(m);
+                }
+            });
+        }, true);
+
+        // Fungsi Memilih User Untuk Pesan Internal
+        window.selectUserForMessage = function(name, email) {
+            const overlay = document.getElementById('no-user-overlay');
+            if(overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+            document.getElementById('selected-user-name').textContent = name;
+            document.getElementById('selected-user-email').textContent = email;
+        };
+
+        // Fungsi Membatalkan / Reset Form Pesan Internal
+        window.resetMessageForm = function() {
+            const overlay = document.getElementById('no-user-overlay');
+            if(overlay) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                }, 10);
+            }
+            document.getElementById('selected-user-name').textContent = '-';
+            document.getElementById('selected-user-email').textContent = '-';
+        };
+
+        // Logika Fitur Pencarian User Pesan Internal
+        window.filterUsers = function() {
+            const input = document.getElementById('user-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.user-list-item');
+            
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        };
+
+        // Logika Pencarian Pengguna Baru
+        window.filterNewUsers = function() {
+            const input = document.getElementById('new-user-search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('.new-user-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        };
+
+        // Logika Pencarian Tabel Riwayat KYC Selesai
+        window.filterKycHistory = function() {
+            const input = document.getElementById('kyc-history-search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('.kyc-history-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        };
+
+        // Logika Pencarian Tabel Riwayat Tiket Selesai
+        window.filterTicketHistory = function() {
+            const input = document.getElementById('ticket-history-search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('.ticket-history-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        };
+        
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('desktop-sidebar');
+            const wrapper = document.getElementById('main-wrapper');
+            if(sidebar) {
+                sidebar.classList.toggle('is-collapsed');
+                if (sidebar.classList.contains('is-collapsed')) {
+                    if(wrapper) {
+                        wrapper.classList.remove('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.add('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                } else {
+                    if(wrapper) {
+                        wrapper.classList.add('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.remove('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                }
+            }
+        }
+
+        window.toggleMenu = function() {
+            const m = document.getElementById('mobile-menu');
+            const iconMenu = document.getElementById('icon-menu');
+            const iconClose = document.getElementById('icon-close');
+            
+            if(m) { 
+                m.classList.toggle('translate-x-full'); 
+                const isOpen = !m.classList.contains('translate-x-full');
+                
+                document.body.style.overflow = isOpen ? 'hidden' : 'auto'; 
+                
+                if(isOpen) {
+                    if(iconMenu) { iconMenu.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconMenu.classList.add('scale-0', 'rotate-90', 'opacity-0'); }
+                    if(iconClose) { iconClose.classList.remove('scale-0', '-rotate-90', 'opacity-0'); iconClose.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                } else {
+                    if(iconClose) { iconClose.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconClose.classList.add('scale-0', '-rotate-90', 'opacity-0'); }
+                    if(iconMenu) { iconMenu.classList.remove('scale-0', 'rotate-90', 'opacity-0'); iconMenu.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>

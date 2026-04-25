@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Workspace - LEODRA Admin</title>
+    
+    <!-- Script Anti-Error ResizeObserver -->
+    <script>
+      const _originalError = console.error;
+      console.error = (...args) => {
+        if (/ResizeObserver loop/.test(args[0])) return;
+        _originalError.apply(console, args);
+      };
+      window.addEventListener('error', e => {
+        if (e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Library Ekspor Data (PDF & Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        /* Gaya Global & Font */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        @media screen and (min-width: 1280px) { body { zoom: 0.85; } }
+        
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA LEODRA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <div class="flex items-center flex-shrink-0 cursor-pointer">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather">LEODRA<span class="text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather mt-1">Admin System</p>
+                    </div>
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-24 pb-4 overflow-y-auto">
+        <div class="flex-1 px-6 py-2 flex flex-col w-full">
+            
+            <h4 class="text-[11px] font-bold tracking-widest uppercase text-slate-400 mb-3.5">Navigasi Admin</h4>
+            <ul class="flex flex-col w-full text-left space-y-1.5">
+                <li class="border-b border-slate-200">
+                    <a href="masuk.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="log-in" class="w-[18px] h-[18px]"></i> <span>Masuk</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <!-- WORKSPACE AKTIF -->
+                <li class="border-b border-black">
+                    <a href="workspace.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i> <span>Workspace</span></div>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+                <!-- SETTING SYSTEM TIDAK AKTIF -->
+                <li class="border-b border-slate-200">
+                    <a href="setting_system.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="settings" class="w-[18px] h-[18px]"></i> <span>Setting System</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-200">
+                    <a href="information_user.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-600 hover:text-black font-semibold transition-colors">
+                        <div class="flex items-center gap-2.5"><i data-lucide="users" class="w-[18px] h-[18px]"></i> <span>Information User</span></div>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto pt-8 pb-4">
+                <span class="font-light text-lg tracking-widest text-black font-merriweather block mb-1.5">LEODRA<span class="text-[10px] text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                <p class="text-[11px] leading-relaxed text-slate-500 text-justify">
+                    Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP (KIRI) ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white/90 backdrop-blur-md border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <div class="flex items-center justify-between px-2 mb-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Menu Admin</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-black hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <a href="masuk.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Masuk</span>
+            </a>
+            <!-- WORKSPACE AKTIF -->
+            <a href="workspace.html" class="flex items-center px-4 py-3 text-[14px] font-medium rounded-none bg-black text-white shadow-md transition-all duration-300 mt-2">
+                <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Workspace</span>
+            </a>
+            <!-- SETTING SYSTEM TIDAK AKTIF -->
+            <a href="setting_system.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="settings" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Setting System</span>
+            </a>
+            <a href="information_user.html" class="flex items-center px-4 py-3 text-[14px] font-medium text-slate-500 hover:text-black hover:bg-slate-100 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="users" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Information User</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ▼▼▼ KONTEN UTAMA WORKSPACE ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative">
+        <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full mb-10 overflow-hidden">
+            
+            <div class="mb-8 sm:mb-10 text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-light text-gray-900 mb-4 uppercase tracking-widest font-merriweather">Ruang Kendali Pusat</h1>
+                <hr class="border-t border-slate-200 mb-4 max-w-3xl mx-auto md:mx-0">
+                <p class="text-[11px] text-slate-500 uppercase tracking-widest font-medium">Ringkasan Operasional & Metrik Utama Hari Ini</p>
+            </div>
+
+            <!-- Judul Dashboard Analitik -->
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                <div class="text-center sm:text-left">
+                    <h2 class="text-lg md:text-xl font-bold text-slate-900 uppercase tracking-widest font-merriweather">Dashboard Analitik</h2>
+                    <p class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium mt-1">Status dan Kinerja Keseluruhan Platform</p>
+                </div>
+            </div>
+
+            <!-- ▼▼▼ DATA METRIK KOTAK PERSEGI KLASIK ▼▼▼ -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
+                <!-- 1. Pendapatan Bulanan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="wallet" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Pendapatan Bulanan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">Rp 125,5<span class="text-xs ml-1">Jt</span></p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> +12.5% vs Bulan Lalu
+                    </span>
+                </div>
+
+                <!-- 2. Pendapatan Keseluruhan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="landmark" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Pendapatan Keseluruhan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">Rp 1,45<span class="text-xs ml-1">M</span></p>
+                    <span class="text-[7.5px] lg:text-[8px] text-slate-400 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="bar-chart" class="w-3 h-3"></i> Total Akumulasi
+                    </span>
+                </div>
+
+                <!-- 3. Total Pengguna Bergabung -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="users" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Total Pengguna Bergabung</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">24.500</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-slate-400 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="globe" class="w-3 h-3"></i> Seluruh Akun Terdaftar
+                    </span>
+                </div>
+
+                <!-- 4. Total Pengguna Berlangganan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="user-check" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Total Pengguna Berlangganan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">8.250</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="activity" class="w-3 h-3"></i> User Premium Aktif
+                    </span>
+                </div>
+
+                <!-- 5. Analis Terdaftar & Aktif -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Analis Terdaftar</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">3.100</p>
+                    <div class="mt-auto flex flex-col items-center gap-1">
+                        <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1">
+                            <i data-lucide="activity" class="w-2.5 h-2.5"></i> 210 Aktif 30 Hari
+                        </span>
+                        <span class="text-[7px] lg:text-[7.5px] text-slate-400 font-merriweather font-light tracking-wider uppercase">
+                            Dari Total Langganan
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 6. Trader Terdaftar & Aktif -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="line-chart" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Trader Terdaftar</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">5.150</p>
+                    <div class="mt-auto flex flex-col items-center gap-1">
+                        <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1">
+                            <i data-lucide="activity" class="w-2.5 h-2.5"></i> 340 Aktif 30 Hari
+                        </span>
+                        <span class="text-[7px] lg:text-[7.5px] text-slate-400 font-merriweather font-light tracking-wider uppercase">
+                            Dari Total Langganan
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 7. Investor Terdaftar & Aktif -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="briefcase" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Investor Terdaftar</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">850</p>
+                    <div class="mt-auto flex flex-col items-center gap-1">
+                        <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1">
+                            <i data-lucide="activity" class="w-2.5 h-2.5"></i> 85 Aktif 30 Hari
+                        </span>
+                        <span class="text-[7px] lg:text-[7.5px] text-slate-400 font-merriweather font-light tracking-wider uppercase">
+                            Dari Total Langganan
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 8. User Baru Bulanan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">User Baru Bulanan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">+450</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> +5.2% vs Bulan Lalu
+                    </span>
+                </div>
+
+                <!-- 9. User Batal Langganan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="user-minus" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">User Batal Langganan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">120</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-rose-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="trending-down" class="w-3 h-3"></i> Dari Langganan Bulan Lalu
+                    </span>
+                </div>
+
+                <!-- 10. User Lanjut Langganan -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">User Lanjut Langganan</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">7.680</p>
+                    <div class="mt-auto flex flex-col items-center gap-1">
+                        <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i> 98.5% Tingkat Retensi
+                        </span>
+                        <span class="text-[7px] lg:text-[7.5px] text-slate-400 font-merriweather font-light tracking-wider uppercase">
+                            Dari 7.800 Langganan Bulan Lalu
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 11. Total Responden Ujian -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Total Responden Ujian</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">1.400</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-slate-400 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="users" class="w-3 h-3"></i> Responden Bulan Ini
+                    </span>
+                </div>
+
+                <!-- 12. Respon Ujian Positif -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="thumbs-up" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Respon Ujian Positif</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">1.250</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="check-circle" class="w-3 h-3"></i> 89% Dari Total Responden
+                    </span>
+                </div>
+
+                <!-- 13. Respon Ujian Negatif -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="thumbs-down" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Respon Ujian Negatif</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">150</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-rose-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="alert-circle" class="w-3 h-3"></i> 11% Dari Total Responden
+                    </span>
+                </div>
+
+                <!-- 14. Saldo LeodraPay -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="credit-card" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Saldo LeodraPay</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">Rp 850<span class="text-xs ml-1">Jt</span></p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="wallet" class="w-3 h-3"></i> Total Saldo Tersedia
+                    </span>
+                </div>
+
+                <!-- 15. Affiliate Terdaftar -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="network" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Affiliate Terdaftar</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">1.250</p>
+                    <span class="text-[7.5px] lg:text-[8px] text-slate-400 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="users" class="w-3 h-3"></i> Total Partner Aktif
+                    </span>
+                </div>
+
+                <!-- 16. Penghasilan Affiliate (Bulanan) -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Penghasilan Affiliate</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">Rp 45,5<span class="text-xs ml-1">Jt</span></p>
+                    <span class="text-[7.5px] lg:text-[8px] text-emerald-600 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> Pendapatan 30 Hari Terakhir
+                    </span>
+                </div>
+
+                <!-- 17. Total Penghasilan Affiliate (Akumulasi) -->
+                <div class="bg-white/80 backdrop-blur-md border border-slate-200 min-h-[130px] py-5 px-4 sm:min-h-0 sm:aspect-square sm:p-4 flex flex-col justify-center items-center text-center hover:border-black transition-all duration-300 shadow-sm group cursor-default">
+                    <i data-lucide="coins" class="w-5 h-5 text-slate-400 mb-3 group-hover:text-black transition-colors"></i>
+                    <h3 class="text-[8px] lg:text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-merriweather font-light leading-relaxed">Total Penghasilan Affiliate</h3>
+                    <p class="text-xl lg:text-2xl text-slate-900 font-merriweather font-light tracking-wide mb-2">Rp 350<span class="text-xs ml-1">Jt</span></p>
+                    <span class="text-[7.5px] lg:text-[8px] text-slate-400 font-merriweather font-light tracking-wider flex items-center justify-center gap-1 mt-auto">
+                        <i data-lucide="layers" class="w-3 h-3"></i> Akumulasi Keseluruhan
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- ▼▼▼ TABEL PERFORMA & REGISTRASI BULANAN ▼▼▼ -->
+            <div class="mt-12 sm:mt-16">
+                <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-lg md:text-xl font-bold text-slate-900 uppercase tracking-widest font-merriweather">Laporan Performa & Pendaftaran</h2>
+                        <p class="text-[10px] md:text-[11px] text-slate-500 uppercase tracking-widest font-medium mt-1">Distribusi Level, Rasio Profit/Loss Bulanan & Akumulasi (Trader, Analis, Investor)</p>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm overflow-x-auto">
+                    <!-- Penyesuaian lebar tabel sedikit diperbesar agar lebih lega dengan banyak kolom -->
+                    <table class="w-full text-center border-collapse whitespace-nowrap min-w-[1200px]">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="bg-slate-50/80 border-b-2 border-slate-300 border-r-2 p-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest align-middle">Kategori Entitas</th>
+                                <th rowspan="2" class="bg-slate-50/80 border-b-2 border-slate-300 border-r-2 p-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest align-middle">Level User</th>
+                                <th colspan="3" class="bg-slate-50/80 border-b border-slate-200 border-r-2 border-slate-300 p-3 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Januari</th>
+                                <th colspan="3" class="bg-slate-50/80 border-b border-slate-200 border-r-2 border-slate-300 p-3 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Februari</th>
+                                <th colspan="3" class="bg-slate-50/80 border-b border-slate-200 border-r-2 border-slate-300 p-3 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Maret</th>
+                                <th colspan="3" class="bg-indigo-50/80 border-b border-slate-200 p-3 text-[10px] font-bold text-indigo-900 uppercase tracking-widest">Akumulasi Tahunan</th>
+                            </tr>
+                            <tr>
+                                <!-- Januari -->
+                                <th class="bg-white border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Jml</th>
+                                <th class="bg-emerald-50/30 border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">% Profit</th>
+                                <th class="bg-rose-50/30 border-b-2 border-slate-300 border-r-2 p-2.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest">% Loss</th>
+                                <!-- Februari -->
+                                <th class="bg-white border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Jml</th>
+                                <th class="bg-emerald-50/30 border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">% Profit</th>
+                                <th class="bg-rose-50/30 border-b-2 border-slate-300 border-r-2 p-2.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest">% Loss</th>
+                                <!-- Maret -->
+                                <th class="bg-white border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Jml</th>
+                                <th class="bg-emerald-50/30 border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">% Profit</th>
+                                <th class="bg-rose-50/30 border-b-2 border-slate-300 border-r-2 p-2.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest">% Loss</th>
+                                <!-- Akumulasi -->
+                                <th class="bg-indigo-50/40 border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-indigo-700 uppercase tracking-widest">Jml</th>
+                                <th class="bg-emerald-50/50 border-b-2 border-r border-slate-300 p-2.5 text-[9px] font-bold text-emerald-700 uppercase tracking-widest">% Profit</th>
+                                <th class="bg-rose-50/50 border-b-2 border-slate-300 p-2.5 text-[9px] font-bold text-rose-700 uppercase tracking-widest">% Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs md:text-[13px] font-merriweather font-light text-slate-700">
+                            
+                            <!-- ===================== DATA TRADER ===================== -->
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td rowspan="6" class="border-b-2 border-slate-300 border-r-2 p-4 text-[12px] font-bold uppercase tracking-widest text-slate-800 align-top bg-white">Data Trader</td>
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Neophyte</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">55</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">60%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">40%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">65</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">55%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">45%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">85</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">65%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">35%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">205</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">60.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">40.0%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Vanguard</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">35</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">65%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">35%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">40</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">58%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">42%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">50</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">70%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">30%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">125</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">64.3%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">35.7%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Virtuoso</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">20</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">70%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">30%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">22</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">62%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">38%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">30</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">72%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">28%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">72</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">68.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">32.0%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Apex</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">10</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">10</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">68%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">32%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">15</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">78%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">22%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">35</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">73.7%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">26.3%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Leviathan</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">5</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">3</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">5</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">13</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">79.7%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">20.3%</td>
+                            </tr>
+                            <tr class="bg-slate-100/60 font-bold border-b-2 border-slate-300">
+                                <td class="border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] uppercase text-slate-800">Total Trader</td>
+                                <td class="border-r border-slate-200 p-2.5">125</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">65%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">35%</td>
+                                <td class="border-r border-slate-200 p-2.5">140</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">58%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">42%</td>
+                                <td class="border-r border-slate-200 p-2.5">185</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">71%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">29%</td>
+                                <td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-indigo-900">450</td><td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-emerald-700">64.2%</td><td class="bg-indigo-100/50 p-2.5 text-rose-700">35.8%</td>
+                            </tr>
+
+                            <!-- ===================== DATA ANALIS ===================== -->
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td rowspan="6" class="border-b-2 border-slate-300 border-r-2 p-4 text-[12px] font-bold uppercase tracking-widest text-slate-800 align-top bg-white">Data Analis</td>
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Initiate</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">20</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">68%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">32%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">25</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">65%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">35%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">30</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">70%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">30%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">75</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">67.7%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">32.3%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Sentinel</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">12</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">72%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">28%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">15</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">68%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">32%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">16</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">43</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">71.7%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">28.3%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Oracle</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">8</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">10</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">72%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">28%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">8</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">78%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">22%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">26</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">75.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">25.0%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Vanguard</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">4</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">80%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">20%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">4</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">4</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">80%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">20%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">12</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">78.3%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">21.7%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Illuminator</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">1</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">85%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">15%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">1</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">2</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">85%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">15%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">4</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">84.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">16.0%</td>
+                            </tr>
+                            <tr class="bg-slate-100/60 font-bold border-b-2 border-slate-300">
+                                <td class="border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] uppercase text-slate-800">Total Analis</td>
+                                <td class="border-r border-slate-200 p-2.5">45</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">72%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">28%</td>
+                                <td class="border-r border-slate-200 p-2.5">55</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">68%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">32%</td>
+                                <td class="border-r border-slate-200 p-2.5">60</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">75%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">25%</td>
+                                <td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-indigo-900">160</td><td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-emerald-700">71.2%</td><td class="bg-indigo-100/50 p-2.5 text-rose-700">28.8%</td>
+                            </tr>
+
+                            <!-- ===================== DATA INVESTOR ===================== -->
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td rowspan="6" class="border-b-2 border-slate-300 border-r-2 p-4 text-[12px] font-bold uppercase tracking-widest text-slate-800 align-top bg-white">Data Investor</td>
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Capital Allocator</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">8</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">12</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">70%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">30%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">15</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">78%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">22%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">35</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">74.3%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">25.7%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Yield Comp.</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">5</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">80%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">20%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">8</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">75%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">25%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">10</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">23</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">79.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">21.0%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">FX Fund Mgr.</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">4</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">5</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">78%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">22%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">6</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">85%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">15%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">15</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">81.7%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">18.3%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Capital Guard.</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">2</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">85%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">15%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">2</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">82%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">18%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">3</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">88%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">12%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">7</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">85.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">15.0%</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="border-b border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] font-bold text-slate-600">Liq. Sovereign</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">1</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">90%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">10%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">1</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">88%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">12%</td>
+                                <td class="border-b border-r border-slate-100 p-2.5">1</td><td class="border-b border-r border-slate-100 p-2.5 text-emerald-600 font-medium">92%</td><td class="border-b border-slate-100 border-r-2 border-slate-300 p-2.5 text-rose-600 font-medium">8%</td>
+                                <td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 font-bold text-slate-700">3</td><td class="border-b border-r border-slate-200 bg-indigo-50/20 p-2.5 text-emerald-600 font-bold">90.0%</td><td class="border-b border-slate-200 bg-indigo-50/20 p-2.5 text-rose-600 font-bold">10.0%</td>
+                            </tr>
+                            <tr class="bg-slate-100/60 font-bold border-b-2 border-slate-300">
+                                <td class="border-r-2 border-slate-300 p-2.5 text-left pl-3 text-[10px] uppercase text-slate-800">Total Investor</td>
+                                <td class="border-r border-slate-200 p-2.5">20</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">80%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">20%</td>
+                                <td class="border-r border-slate-200 p-2.5">28</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">75%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">25%</td>
+                                <td class="border-r border-slate-200 p-2.5">35</td><td class="border-r border-slate-200 p-2.5 text-emerald-700">82%</td><td class="border-r-2 border-slate-300 p-2.5 text-rose-700">18%</td>
+                                <td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-indigo-900">83</td><td class="border-r border-slate-200 bg-indigo-100/50 p-2.5 text-emerald-700">78.7%</td><td class="bg-indigo-100/50 p-2.5 text-rose-700">21.3%</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ▼▼▼ TOMBOL UNDUH LAPORAN ▼▼▼ -->
+                <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-6">
+                    <div class="text-center sm:text-left w-full sm:w-auto">
+                        <h3 class="text-[12px] font-bold text-slate-800 uppercase tracking-widest font-merriweather">Ekspor Dokumen</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-medium">Unduh rekapitulasi data Dashboard dan Performa Pendaftaran</p>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button onclick="downloadExcel()" class="flex-1 sm:flex-none bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-6 py-3.5 hover:bg-emerald-600 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Unduh Excel
+                        </button>
+                        <button onclick="downloadPDF()" class="flex-1 sm:flex-none bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-6 py-3.5 hover:bg-rose-600 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="file-text" class="w-4 h-4"></i> Unduh PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 mb-6">
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 text-left">
+                        <span class="font-light text-lg md:text-xl tracking-widest text-white font-merriweather block mb-2">LEODRA<span class="text-xs md:text-sm text-[#d4af37] font-merriweather font-light tracking-widest ml-1">WORKSPACE</span></span>
+                        <p class="text-[11px] md:text-xs leading-relaxed text-left">
+                            Sistem Manajemen Pusat (CMS) untuk kontrol data operasional, metrik langganan, dan pembaruan konten platform LEODRA Analytics secara *real-time*.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-6 lg:col-span-6 flex flex-col items-start md:pl-8 lg:pl-16 w-full mt-2 md:mt-0">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3 border-b border-slate-800 pb-2 w-full max-w-[200px] text-left">Navigasi Admin</h4>
+                        <div class="grid grid-cols-1 gap-y-2 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[280px]">
+                            <a href="masuk.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="log-in" class="w-3 h-3 text-slate-500"></i> Masuk</a>
+                            <!-- WORKSPACE AKTIF -->
+                            <a href="workspace.html" class="text-white transition-colors flex items-center gap-1.5"><i data-lucide="layout-dashboard" class="w-3 h-3 text-white"></i> <span class="border-b border-white pb-0.5">Workspace</span></a>
+                            <!-- SETTING SYSTEM TIDAK AKTIF -->
+                            <a href="setting_system.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="settings" class="w-3 h-3 text-slate-500"></i> Setting System</a>
+                            <a href="information_user.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="users" class="w-3 h-3 text-slate-500"></i> Information User</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 text-[9px] md:text-[10px] text-slate-500 text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Akses:</strong> Halaman ini bersifat rahasia dan hanya diperuntukkan bagi Administrator sistem LEODRA tingkat pusat. Segala bentuk modifikasi data direkam dalam log aktivitas.
+                    </div>
+                    <div class="flex flex-col items-start lg:items-end gap-1 flex-shrink-0 mt-2 lg:mt-0">
+                        <p>&copy; 2026 LEODRA System Admin. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ▼▼▼ LOGIKA JAVASCRIPT ▼▼▼ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+        });
+
+        window.toggleMenu = function() {
+            const m = document.getElementById('mobile-menu');
+            const iconMenu = document.getElementById('icon-menu');
+            const iconClose = document.getElementById('icon-close');
+            
+            if(m) { 
+                m.classList.toggle('translate-x-full'); 
+                const isOpen = !m.classList.contains('translate-x-full');
+                
+                document.body.style.overflow = isOpen ? 'hidden' : 'auto'; 
+                
+                if(isOpen) {
+                    if(iconMenu) { iconMenu.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconMenu.classList.add('scale-0', 'rotate-90', 'opacity-0'); }
+                    if(iconClose) { iconClose.classList.remove('scale-0', '-rotate-90', 'opacity-0'); iconClose.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                } else {
+                    if(iconClose) { iconClose.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconClose.classList.add('scale-0', '-rotate-90', 'opacity-0'); }
+                    if(iconMenu) { iconMenu.classList.remove('scale-0', 'rotate-90', 'opacity-0'); iconMenu.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                }
+            }
+        }
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('desktop-sidebar');
+            const wrapper = document.getElementById('main-wrapper');
+            if(sidebar) {
+                sidebar.classList.toggle('is-collapsed');
+                if (sidebar.classList.contains('is-collapsed')) {
+                    if(wrapper) {
+                        wrapper.classList.remove('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.add('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                } else {
+                    if(wrapper) {
+                        wrapper.classList.add('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.remove('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                }
+            }
+        }
+
+        // --- FUNGSI EKSPOR DATA --- //
+        
+        function getDashboardData() {
+            const blocks = document.querySelectorAll('.aspect-square');
+            let data = [];
+            blocks.forEach(block => {
+                const title = block.querySelector('h3') ? block.querySelector('h3').innerText : '';
+                const valueElem = block.querySelector('p');
+                let value = '';
+                if(valueElem) {
+                    value = valueElem.innerText.replace(/\n/g, ' ').trim();
+                }
+                if(title && value) {
+                    data.push([title, value]);
+                }
+            });
+            return data;
+        }
+
+        window.downloadPDF = function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4'); 
+            
+            doc.setFont("times", "bold");
+            doc.setFontSize(16);
+            doc.text("Laporan Analitik & Performa LEODRA", 40, 50);
+            
+            doc.setFont("times", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Dokumen rekapitulasi resmi dari platform LEODRA Workspace.", 40, 65);
+            doc.text("Waktu Unduh: " + new Date().toLocaleString('id-ID'), 40, 80);
+            
+            doc.setDrawColor(200, 200, 200);
+            doc.line(40, 95, 555, 95);
+
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text("1. Data Dashboard Analitik", 40, 120);
+
+            const dashboardData = getDashboardData();
+            
+            doc.autoTable({
+                startY: 130,
+                head: [['Metrik Pengukuran', 'Nilai / Status Aktif']],
+                body: dashboardData,
+                theme: 'grid',
+                styles: { font: 'times', fontSize: 10, textColor: [30, 30, 30], cellPadding: 5 },
+                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', lineColor: [200, 200, 200] },
+                alternateRowStyles: { fillColor: [252, 252, 252] },
+                tableLineColor: [200, 200, 200],
+                tableLineWidth: 0.5
+            });
+
+            let finalY = doc.lastAutoTable.finalY || 130;
+            
+            if(finalY > 600) {
+                doc.addPage();
+                finalY = 40;
+            } else {
+                finalY += 40;
+            }
+
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            doc.text("2. Laporan Performa & Pendaftaran Bulanan", 40, finalY);
+            
+            doc.setFont("times", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Distribusi Level, Rasio Profit/Loss Bulanan & Akumulasi (Trader, Analis, Investor)", 40, finalY + 12);
+
+            doc.autoTable({
+                html: 'table', 
+                startY: finalY + 22, 
+                theme: 'grid',
+                styles: { 
+                    font: 'times', 
+                    fontSize: 7, 
+                    textColor: [30, 30, 30], 
+                    cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.5,
+                    valign: 'middle'
+                },
+                headStyles: { 
+                    fillColor: [235, 235, 235], 
+                    textColor: [0, 0, 0], 
+                    fontStyle: 'bold', 
+                    halign: 'center', 
+                    lineColor: [150, 150, 150], 
+                    lineWidth: 0.75 
+                },
+                columnStyles: { 
+                    0: { fontStyle: 'bold', halign: 'center', fillColor: [250, 250, 250] },
+                    1: { fontStyle: 'bold', fillColor: [250, 250, 250] } 
+                },
+                didParseCell: function(data) {
+                    // LOGIKA PEMISAH GARIS TEGAS ANTAR BULAN
+                    // Index Kolom Batas: 1 (Level), 4 (Jan), 7 (Feb), 10 (Mar), 13 (Akumulasi)
+                    if ([1, 4, 7, 10, 13].includes(data.column.index)) {
+                        data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0.5, right: 1.5 }; 
+                        data.cell.styles.lineColor = [120, 120, 120]; 
+                    }
+
+                    // LOGIKA PEWARNAAN HEADER
+                    if (data.section === 'head') {
+                        if (data.row.index === 0) {
+                            data.cell.styles.fontSize = 8.5; 
+                        } else if (data.row.index === 1) {
+                            data.cell.styles.fontSize = 6.5; 
+                            if ([3, 6, 9, 12].includes(data.column.index)) data.cell.styles.fillColor = [235, 245, 235]; // Tint Hijau Profit
+                            if ([4, 7, 10, 13].includes(data.column.index)) data.cell.styles.fillColor = [245, 235, 235]; // Tint Merah Loss
+                        }
+                    }
+
+                    // LOGIKA PEWARNAAN TEXT PROFIT/LOSS DI KONTEN
+                    if (data.section === 'body') {
+                        if ([3, 6, 9, 12].includes(data.column.index)) {
+                            data.cell.styles.textColor = [16, 185, 129]; // Emerald (Hijau)
+                        }
+                        if ([4, 7, 10, 13].includes(data.column.index)) {
+                            data.cell.styles.textColor = [225, 29, 72]; // Rose (Merah)
+                        }
+                        
+                        // Menegaskan baris "Total" pada masing-masing entitas
+                        if (data.row.raw && data.row.raw.innerText && data.row.raw.innerText.toLowerCase().includes('total')) {
+                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.fillColor = [245, 245, 250]; 
+                        }
+                    }
+                }
+            });
+
+            finalY = doc.lastAutoTable.finalY + 30;
+            doc.setFont("times", "italic");
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text("* Laporan ini dibuat secara otomatis oleh sistem pusat LEODRA Workspace.", 40, finalY);
+            doc.text("* Angka persentase merujuk pada perbandingan rasio rata-rata aktif untuk setiap entitas.", 40, finalY + 15);
+            doc.text("* Dokumen ini bersifat konfidensial dan hanya ditujukan untuk keperluan internal.", 40, finalY + 30);
+
+            doc.save('Laporan_Data_LEODRA.pdf');
+        };
+
+        window.downloadExcel = function() {
+            const wb = XLSX.utils.book_new();
+
+            const dashboardData = getDashboardData();
+            dashboardData.unshift(['Metrik Pengukuran', 'Nilai']); 
+            const ws1 = XLSX.utils.aoa_to_sheet(dashboardData);
+            
+            ws1['!cols'] = [{wch: 35}, {wch: 25}];
+            XLSX.utils.book_append_sheet(wb, ws1, "Dashboard Analitik");
+
+            const tableElement = document.querySelector('table');
+            const ws2 = XLSX.utils.table_to_sheet(tableElement);
+            XLSX.utils.book_append_sheet(wb, ws2, "Laporan Performa");
+
+            XLSX.writeFile(wb, 'Laporan_Data_LEODRA.xlsx');
+        };
+    </script>
+</body>
+</html>
